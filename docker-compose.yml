@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:18-alpine
+    restart: always
+    shm_size: '128mb'
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ./database/data:/var/lib/postgresql   # Persistent data storage
+
+  interface:
+    build: ./interface
+    env_file:
+      - .env
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./interface:/app
+    environment:
+      - FLASK=${FLASK_ENV}
+    depends_on:
+      - db
