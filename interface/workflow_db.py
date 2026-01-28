@@ -1,0 +1,223 @@
+"""
+Flask backend for Hierarchical Workflow Designer with PostgreSQL support
+"""
+from flask import Flask, jsonify, request, send_from_directory
+from flask_cors import CORS
+from config import config
+from models import db, Workflow, Node, Edge
+import os
+import json
+import glob
+
+# Initialize Flask app
+app = Flask(__name__, static_folder='static')
+CORS(app)
+
+# Load configuration
+env = os.environ.get('FLASK_ENV', 'development')
+app.config.from_object(config[env])
+
+# Initialize database
+db.init_app(app)
+
+
+@app.route('/')
+def index():
+    """Serve the main HTML page"""
+    return send_from_directory('static', 'index.html')
+
+
+@app.route('/<path:path>')
+def serve_static(path):
+    """Serve static files"""
+    return send_from_directory('static', path)
+
+
+@app.route('/api/workflow/<workflow_id>', methods=['GET'])
+def get_workflow(workflow_id):
+    """Get a specific workflow by ID"""
+    workflow = Workflow.query.get(workflow_id)
+    if workflow:
+        return jsonify(workflow.to_dict())
+    return jsonify({'error': 'Workflow not found'}), 404
+
+
+@app.route('/api/workflow/<workflow_id>', methods=['PUT'])
+def update_workflow(workflow_id):
+    """Update a workflow's nodes and edges"""
+    workflow = Workflow.query.get(workflow_id)
+    if not workflow:
+        return jsonify({'error': 'Workflow not found'}), 404
+
+    data = request.json
+
+    # Update nodes if provided
+    if 'nodes' in data:
+        # Remove existing nodes
+        Node.query.filter_by(workflow_id=workflow_id).delete()
+
+        # Add new nodes
+        for node_data in data['nodes']:
+            node = Node(
+                id=node_data['id'],
+                workflow_id=workflow_id,
+                type=node_data.get('type', 'default'),
+                label=node_data['label'],
+                subflow_id=node_data.get('subflowId'),
+                position_x=node_data['x'],
+                position_y=node_data['y']
+            )
+            db.session.add(node)
+
+    # Update edges if provided
+    if 'edges' in data:
+        # Remove existing edges
+        Edge.query.filter_by(workflow_id=workflow_id).delete()
+
+        # Add new edges
+        for edge_data in data['edges']:
+            edge = Edge(
+                id=edge_data.get('id', f"e-{edge_data['from']}-{edge_data['to']}"),
+                workflow_id=workflow_id,
+                source_node_id=edge_data['from'],
+                target_node_id=edge_data['to'],
+                animated=edge_data.get('animated', True)
+            )
+            db.session.add(edge)
+
+    db.session.commit()
+    return jsonify({'success': True, 'workflow': workflow.to_dict()})
+
+
+@app.route('/api/workflow', methods=['POST'])
+def create_workflow():
+    """Create a new workflow"""
+    data = request.json
+
+    # Check if workflow already exists
+    if Workflow.query.get(data['id']):
+        return jsonify({'error': 'Workflow with this ID already exists'}), 400
+
+    # Create new workflow
+    workflow = Workflow(
+        id=data['id'],
+        name=data['name'],
+        parent_id=data.get('parentId')
+    )
+    db.session.add(workflow)
+
+    # Add nodes if provided
+    if 'nodes' in data:
+        for node_data in data['nodes']:
+            node = Node(
+                id=node_data['id'],
+                workflow_id=workflow.id,
+                type=node_data.get('type', 'default'),
+                label=node_data['label'],
+                subflow_id=node_data.get('subflowId'),
+                position_x=node_data['x'],
+                position_y=node_data['y']
+            )
+            db.session.add(node)
+
+    # Add edges if provided
+    if 'edges' in data:
+        for edge_data in data['edges']:
+            edge = Edge(
+                id=edge_data.get('id', f"e-{edge_data['from']}-{edge_data['to']}"),
+                workflow_id=workflow.id,
+                source_node_id=edge_data['from'],
+                target_node_id=edge_data['to'],
+                animated=edge_data.get('animated', True)
+            )
+            db.session.add(edge)
+
+    db.session.commit()
+    return jsonify({'success': True, 'workflow': workflow.to_dict()}), 201
+
+
+@app.route('/api/workflow/<workflow_id>', methods=['DELETE'])
+def delete_workflow(workflow_id):
+    """Delete a workflow"""
+    workflow = Workflow.query.get(workflow_id)
+    if not workflow:
+        return jsonify({'error': 'Workflow not found'}), 404
+
+    db.session.delete(workflow)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Workflow deleted'})
+
+
+@app.route('/api/workflows', methods=['GET'])
+def list_workflows():
+    """List all available workflows"""
+    workflows = Workflow.query.all()
+    return jsonify([{'id': w.id, 'name': w.name, 'parentId': w.parent_id} for w in workflows])
+
+
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    """Health check endpoint"""
+    try:
+        # Test database connection
+        db.session.execute('SELECT 1')
+        return jsonify({'status': 'healthy', 'database': 'connected'})
+    except Exception as e:
+        return jsonify({'status': 'unhealthy', 'error': str(e)}), 500
+
+
+# Base path for pieces directories
+PIECES_BASE_PATH = '/pieces'
+if not os.path.isdir(PIECES_BASE_PATH):
+    # Fallback for local development
+    PIECES_BASE_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'pieces')
+
+
+@app.route('/api/piece-directories', methods=['GET'])
+def list_piece_directories():
+    """List available piece directories by scanning the pieces folder"""
+    directories = []
+    if os.path.isdir(PIECES_BASE_PATH):
+        for name in os.listdir(PIECES_BASE_PATH):
+            if os.path.isdir(os.path.join(PIECES_BASE_PATH, name)):
+                directories.append(name)
+    return jsonify(sorted(directories))
+
+
+@app.route('/api/pieces/<directory>', methods=['GET'])
+def list_pieces(directory):
+    """List all pieces in a directory by reading metadata.json files"""
+    base_path = os.path.join(PIECES_BASE_PATH, directory)
+
+    if not os.path.isdir(base_path):
+        return jsonify({'error': f'Directory {directory} not found'}), 404
+
+    pieces = []
+    # Find all metadata.json files recursively
+    pattern = os.path.join(base_path, '**', 'metadata.json')
+    for metadata_path in glob.glob(pattern, recursive=True):
+        try:
+            with open(metadata_path, 'r') as f:
+                metadata = json.load(f)
+
+            # Extract piece info
+            style = metadata.get('style', {})
+            piece_dir = os.path.dirname(metadata_path)
+            category = os.path.basename(os.path.dirname(piece_dir))
+
+            pieces.append({
+                'name': metadata.get('name', 'Unknown'),
+                'description': metadata.get('description', ''),
+                'node_label': style.get('node_label', metadata.get('name', 'Unknown')),
+                'icon_class_name': style.get('icon_class_name', 'fa-solid:cube'),
+                'category': category,
+                'tags': metadata.get('tags', [])
+            })
+        except (json.JSONDecodeError, IOError) as e:
+            continue
+
+    return jsonify(pieces)
+
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hierarchical Workflow Designer</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="root">
+        <div class="app-container">
+            <!-- Sidebar -->
+            <aside id="sidebar" class="sidebar">
+                <div class="sidebar-header">
+                    <button id="sidebar-toggle" class="sidebar-toggle" title="Toggle sidebar">
+                        <i class="fa-solid fa-bars icon-menu"></i>
+                        <i class="fa-solid fa-xmark icon-close"></i>
+                    </button>
+                </div>
+                <nav class="sidebar-nav">
+                    <a href="#" class="sidebar-link active" data-page="workflows">
+                        <i class="fa-solid fa-diagram-project"></i>
+                        <span class="sidebar-label">Workflows</span>
+                    </a>
+                    <a href="#" class="sidebar-link" data-page="experiments">
+                        <i class="fa-solid fa-flask"></i>
+                        <span class="sidebar-label">Experiments</span>
+                    </a>
+                    <a href="#" class="sidebar-link" data-page="monitor">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span class="sidebar-label">Monitor</span>
+                    </a>
+                    <a href="#" class="sidebar-link" data-page="settings">
+                        <i class="fa-solid fa-gear"></i>
+                        <span class="sidebar-label">Settings</span>
+                    </a>
+                </nav>
+                <div class="sidebar-footer">
+                    <button id="help-toggle" class="sidebar-link" title="Toggle instructions">
+                        <i class="fa-solid fa-circle-question"></i>
+                        <span class="sidebar-label">Help</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Header -->
+                <div style="background: #1f2937; color: white; padding: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <h1 style="font-size: 1.5rem; font-weight: bold; margin: 0 0 0.5rem 0;">Hierarchical Workflow Designer</h1>
+
+                    <!-- Breadcrumb Navigation -->
+                    <div id="breadcrumbs" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                        <!-- Breadcrumbs will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Instructions -->
+                <div id="instructions-box" class="instructions-box">
+                    <p style="font-weight: 600; color: #1e3a8a; margin: 0 0 0.25rem 0;">Instructions:</p>
+                    <p style="color: #1e40af; margin: 0;">
+                        • <strong>Double-click</strong> the purple "Process B" node to drill down into its sub-workflow
+                        • Use the <strong>breadcrumb navigation</strong> above to return to parent workflows
+                        • <strong>Drag nodes</strong> to reposition them
+                    </p>
+                </div>
+
+                <!-- Workflow Area -->
+                <div class="workflow-area">
+                    <!-- Workflow Canvas -->
+                    <div id="canvas" style="flex: 1; position: relative; background: #f9fafb; overflow: hidden;">
+                        <!-- Top Toolbar -->
+                        <div id="canvas-toolbar" class="canvas-toolbar">
+                            <button id="save-workflow" class="toolbar-btn" title="Save workflow">
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                <span>Save</span>
+                            </button>
+                        </div>
+                        <div id="canvas-viewport">
+                            <svg id="edges">
+                                <defs>
+                                    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                        <polygon points="0 0, 10 3, 0 6" fill="#b1b1b7" />
+                                    </marker>
+                                </defs>
+                            </svg>
+                            <div id="nodes"></div>
+                        </div>
+                        <!-- Zoom Toolbar -->
+                        <div id="zoom-toolbar" class="zoom-toolbar">
+                            <button id="zoom-in" class="zoom-btn" title="Zoom in">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                            <span id="zoom-level" class="zoom-level">100%</span>
+                            <button id="zoom-out" class="zoom-btn" title="Zoom out">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                            <div class="zoom-separator"></div>
+                            <button id="zoom-fit" class="zoom-btn" title="Fit to view">
+                                <i class="fa-solid fa-expand"></i>
+                            </button>
+                            <button id="auto-layout" class="zoom-btn" title="Auto-arrange nodes">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel: Pieces -->
+                    <aside id="pieces-panel" class="pieces-panel">
+                        <div class="pieces-header">
+                            <h2>Pieces</h2>
+                            <button id="pieces-toggle" class="pieces-toggle" title="Toggle panel">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="pieces-content">
+                            <div class="pieces-search">
+                                <i class="fa-solid fa-search"></i>
+                                <input type="text" id="pieces-search" placeholder="Search pieces...">
+                            </div>
+                            <div class="pieces-directory-select">
+                                <select id="pieces-directory">
+                                    <!-- Options will be populated dynamically -->
+                                </select>
+                            </div>
+                            <div id="pieces-list" class="pieces-list">
+                                <!-- Pieces will be listed here -->
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script src="app.js"></script>
+</body>
+</html>
