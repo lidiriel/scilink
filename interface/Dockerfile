@@ -1,4 +1,4 @@
-FROM python:3.9-slim AS FRONTEND
+FROM python:3.10-slim AS scilink-interface
 # working directory inside the container
 WORKDIR /app
 COPY . /app
