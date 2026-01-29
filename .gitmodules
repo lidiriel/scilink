@@ -1,0 +1,3 @@
+[submodule "pieces/default"]
+	path = pieces/default
+	url = git@github.com:lidiriel/scilink-pieces-default.git
