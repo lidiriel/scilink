@@ -58,7 +58,7 @@ const ZOOM_STEP = 0.1;
 function init() {
     initCanvasDropZone();
     initZoomControls();
-    loadWorkflow('main');
+    //loadWorkflow('main');
 }
 
 // Initialize canvas as drop zone for pieces
@@ -1000,7 +1000,7 @@ async function saveWorkflow() {
 
 // ============== Page Navigation ==============
 
-let currentPage = 'workflows';
+let currentPage = 'experiments';
 
 function initNavigation() {
     const navLinks = document.querySelectorAll('.sidebar-link[data-page]');
@@ -1029,7 +1029,7 @@ function navigateToPage(page) {
 
     // Load page-specific data
     if (page === 'settings') {
-        loadPlatforms();
+        loadSettings();
     } else if (page === 'experiments') {
         loadExperiments();
     }
@@ -1100,7 +1100,7 @@ function closePlatformModal() {
     modal.classList.add('hidden');
 }
 
-async function loadPlatforms() {
+async function loadSettings() {
     try {
         const response = await fetch('/api/settings?category=platform');
         platformsData = await response.json();
@@ -1111,13 +1111,14 @@ async function loadPlatforms() {
 }
 
 function renderPlatformsList() {
+    const addBtn = document.getElementById('add-platform-btn');
     const list = document.getElementById('platforms-list');
 
     if (platformsData.length === 0) {
         list.innerHTML = '<div class="settings-empty">No platforms configured yet.</div>';
         return;
     }
-
+    addBtn.classList.add('hidden');
     list.innerHTML = platformsData.map(platform => `
         <div class="settings-item" data-id="${platform.id}">
             <div class="settings-item-info">
@@ -1184,7 +1185,7 @@ async function savePlatform() {
 
         if (response.ok) {
             closePlatformModal();
-            loadPlatforms();
+            loadSettings();
         } else {
             const error = await response.json();
             alert(error.error || 'Failed to save platform');
@@ -1206,7 +1207,7 @@ async function deletePlatform(id) {
         });
 
         if (response.ok) {
-            loadPlatforms();
+            loadSettings();
         } else {
             alert('Failed to delete platform');
         }
