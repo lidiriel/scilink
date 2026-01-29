@@ -980,6 +980,34 @@ body.connecting .node-port.port-active {
     color: white;
 }
 
+.workflow-item-run {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.workflow-item-edit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
 .workflow-item-delete {
     display: flex;
     align-items: center;
@@ -992,11 +1020,16 @@ body.connecting .node-port.port-active {
     color: #9ca3af;
     cursor: pointer;
     transition: all 0.15s;
-    opacity: 0;
 }
 
-.experiment-workflow-item:hover .workflow-item-delete {
-    opacity: 1;
+.workflow-item-run:hover {
+    background: #22c55e;
+    color: white;
+}
+
+.workflow-item-edit:hover {
+    background: #2563eb;
+    color: white;
 }
 
 .workflow-item-delete:hover {

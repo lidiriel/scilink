@@ -37,7 +37,7 @@ const workflows = {
 // State
 let currentWorkflowId = 'main';
 let currentExperiment = null; // Currently selected experiment { id, name }
-let breadcrumbs = [{ id: 'main', name: 'Main Workflow' }];
+//let breadcrumbs = [{ id: 'main', name: 'Main Workflow' }];
 let nodeElements = {};
 let nodeIdCounter = 1000; // Counter for generating unique node IDs
 
@@ -1115,7 +1115,7 @@ function renderPlatformsList() {
     const list = document.getElementById('platforms-list');
 
     if (platformsData.length === 0) {
-        list.innerHTML = '<div class="settings-empty">No platforms configured yet.</div>';
+        list.innerHTML = '<div class="settings-empty">No platform configured yet.</div>';
         return;
     }
     addBtn.classList.add('hidden');
@@ -1307,6 +1307,12 @@ function renderExperimentsList() {
                                 <i class="fa-solid fa-diagram-project"></i>
                                 <span>${escapeHtml(wf.name)}</span>
                             </div>
+                            <button class="workflow-item-run" title="Run workflow" onclick="event.stopPropagation(); runWorkflow('${wf.id}')">
+                                <i class="fa-solid fa-play"></i>
+                            </button>
+                            <button class="workflow-item-edit" title="Edit workflow name" onclick="event.stopPropagation(); editWorkflow(${experiment.id}, '${wf.id}')">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
                             <button class="workflow-item-delete" title="Delete workflow" onclick="event.stopPropagation(); deleteWorkflow('${wf.id}')">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
@@ -1481,6 +1487,55 @@ async function addWorkflowToExperiment(experimentId) {
     } catch (error) {
         console.error('Error adding workflow:', error);
         alert('Failed to add workflow');
+    }
+}
+
+async function runWorkflow(workflowId) {
+    try {
+        const response = await fetch(`/api/workflow/${workflowId}/run`, {
+            method: 'POST'
+        });
+
+        if (response.ok) {
+            alert('Workflow execution started');
+        } else {
+            const error = await response.json();
+            alert(error.error || 'Failed to run workflow');
+        }
+    } catch (error) {
+        console.error('Error running workflow:', error);
+        alert('Failed to run workflow');
+    }
+}
+
+async function editWorkflow(experimentId, workflowId) {
+    const experiment = experimentsData.find(e => e.id === experimentId);
+    if (!experiment) return;
+
+    const workflow = experiment.workflows.find(w => w.id === workflowId);
+    if (!workflow) return;
+
+    const newName = prompt('Enter new workflow name:', workflow.name);
+    if (!newName || !newName.trim() || newName.trim() === workflow.name) return;
+
+    try {
+        const response = await fetch(`/api/workflow/${workflowId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: newName.trim() })
+        });
+
+        if (response.ok) {
+            // Update local data
+            workflow.name = newName.trim();
+            loadExperiments();
+        } else {
+            const error = await response.json();
+            alert(error.error || 'Failed to rename workflow');
+        }
+    } catch (error) {
+        console.error('Error editing workflow:', error);
+        alert('Failed to rename workflow');
     }
 }
 

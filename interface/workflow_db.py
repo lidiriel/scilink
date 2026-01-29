@@ -52,6 +52,10 @@ def update_workflow(workflow_id):
 
     data = request.json
 
+    # Update workflow name if provided
+    if 'name' in data:
+        workflow.name = data['name']
+
     # Update nodes if provided
     if 'nodes' in data:
         # Remove existing nodes
@@ -148,6 +152,17 @@ def delete_workflow(workflow_id):
     db.session.commit()
     return jsonify({'success': True, 'message': 'Workflow deleted'})
 
+@app.route('/api/workflows/<workflow_id>/run', methods=['POST'])
+def run_workflow(workflow_id):
+    """Run a workflow"""
+    workflow = Workflow.query.get(workflow_id)
+    if not workflow:
+        return jsonify({'error': 'Workflow not found'}), 404
+
+    # TOSDO: Implement workflow execution logic here
+    # In a real implementation, this would trigger the actual workflow execution
+    # For now, we'll just return a success message
+    return jsonify({'success': True, 'message': 'Workflow execution started'})
 
 @app.route('/api/workflows', methods=['GET'])
 def list_workflows():
