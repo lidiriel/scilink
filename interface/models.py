@@ -6,6 +6,34 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
+class Experiment(db.Model):
+    """Experiment model representing a collection of workflows"""
+    __tablename__ = 'experiments'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    workflows = db.relationship('Workflow', back_populates='experiment', cascade='all, delete-orphan', lazy='dynamic')
+
+    def to_dict(self):
+        """Convert experiment to dictionary format"""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'workflows': [{'id': w.id, 'name': w.name} for w in self.workflows],
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+    def __repr__(self):
+        return f'<Experiment {self.id}: {self.name}>'
+
+
 class Workflow(db.Model):
     """Workflow model representing a workflow or sub-workflow"""
     __tablename__ = 'workflows'
@@ -13,13 +41,15 @@ class Workflow(db.Model):
     id = db.Column(db.String(100), primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     parent_id = db.Column(db.String(100), db.ForeignKey('workflows.id', ondelete='CASCADE'), nullable=True)
+    experiment_id = db.Column(db.Integer, db.ForeignKey('experiments.id', ondelete='CASCADE'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
-    nodes = db.relationship('Node', back_populates='workflow', cascade='all, delete-orphan', lazy='dynamic')
+    nodes = db.relationship('Node', back_populates='workflow', cascade='all, delete-orphan', lazy='dynamic', foreign_keys='Node.workflow_id')
     edges = db.relationship('Edge', back_populates='workflow', cascade='all, delete-orphan', lazy='dynamic')
     parent = db.relationship('Workflow', remote_side=[id], backref='children')
+    experiment = db.relationship('Experiment', back_populates='workflows')
 
     def to_dict(self):
         """Convert workflow to dictionary format"""
@@ -97,3 +127,36 @@ class Edge(db.Model):
 
     def __repr__(self):
         return f'<Edge {self.id}: {self.source_node_id} -> {self.target_node_id}>'
+
+
+class Setting(db.Model):
+    """Setting model for storing application settings as key-value pairs with JSON data"""
+    __tablename__ = 'settings'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    category = db.Column(db.String(50), nullable=False)  # e.g., 'platform', 'general', etc.
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    data = db.Column(db.JSON, nullable=True)  # Flexible JSON field for additional data
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Unique constraint on category + name
+    __table_args__ = (
+        db.UniqueConstraint('category', 'name', name='uq_settings_category_name'),
+    )
+
+    def to_dict(self):
+        """Convert setting to dictionary format"""
+        return {
+            'id': self.id,
+            'category': self.category,
+            'name': self.name,
+            'description': self.description,
+            'data': self.data,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+    def __repr__(self):
+        return f'<Setting {self.id}: {self.category}/{self.name}>'

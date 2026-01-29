@@ -4,7 +4,8 @@ Flask backend for Hierarchical Workflow Designer with PostgreSQL support
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from config import config
-from models import db, Workflow, Node, Edge
+from models import db, Experiment, Workflow, Node, Edge, Setting
+import uuid
 import os
 import json
 import glob
@@ -77,7 +78,7 @@ def update_workflow(workflow_id):
         # Add new edges
         for edge_data in data['edges']:
             edge = Edge(
-                id=edge_data.get('id', f"e-{edge_data['from']}-{edge_data['to']}"),
+                id=edge_data.get('id', f"{workflow_id}-e-{edge_data['from']}-{edge_data['to']}"),
                 workflow_id=workflow_id,
                 source_node_id=edge_data['from'],
                 target_node_id=edge_data['to'],
@@ -124,7 +125,7 @@ def create_workflow():
     if 'edges' in data:
         for edge_data in data['edges']:
             edge = Edge(
-                id=edge_data.get('id', f"e-{edge_data['from']}-{edge_data['to']}"),
+                id=edge_data.get('id', f"{workflow.id}-e-{edge_data['from']}-{edge_data['to']}"),
                 workflow_id=workflow.id,
                 source_node_id=edge_data['from'],
                 target_node_id=edge_data['to'],
@@ -217,6 +218,203 @@ def list_pieces(directory):
             continue
 
     return jsonify(pieces)
+
+
+# ============== Settings API ==============
+
+@app.route('/api/settings', methods=['GET'])
+def list_settings():
+    """List all settings, optionally filtered by category"""
+    category = request.args.get('category')
+    if category:
+        settings = Setting.query.filter_by(category=category).all()
+    else:
+        settings = Setting.query.all()
+    return jsonify([s.to_dict() for s in settings])
+
+
+@app.route('/api/settings/<int:setting_id>', methods=['GET'])
+def get_setting(setting_id):
+    """Get a specific setting by ID"""
+    setting = Setting.query.get(setting_id)
+    if setting:
+        return jsonify(setting.to_dict())
+    return jsonify({'error': 'Setting not found'}), 404
+
+
+@app.route('/api/settings', methods=['POST'])
+def create_setting():
+    """Create a new setting"""
+    data = request.json
+
+    # Validate required fields
+    if not data.get('category'):
+        return jsonify({'error': 'Category is required'}), 400
+    if not data.get('name'):
+        return jsonify({'error': 'Name is required'}), 400
+
+    # Check if setting with same category+name exists
+    existing = Setting.query.filter_by(
+        category=data['category'],
+        name=data['name']
+    ).first()
+    if existing:
+        return jsonify({'error': 'Setting with this category and name already exists'}), 400
+
+    setting = Setting(
+        category=data['category'],
+        name=data['name'],
+        description=data.get('description'),
+        data=data.get('data')
+    )
+    db.session.add(setting)
+    db.session.commit()
+
+    return jsonify({'success': True, 'setting': setting.to_dict()}), 201
+
+
+@app.route('/api/settings/<int:setting_id>', methods=['PUT'])
+def update_setting(setting_id):
+    """Update an existing setting"""
+    setting = Setting.query.get(setting_id)
+    if not setting:
+        return jsonify({'error': 'Setting not found'}), 404
+
+    data = request.json
+
+    if 'name' in data:
+        # Check if another setting has this category+name combination
+        existing = Setting.query.filter_by(
+            category=setting.category,
+            name=data['name']
+        ).first()
+        if existing and existing.id != setting_id:
+            return jsonify({'error': 'Setting with this name already exists in this category'}), 400
+        setting.name = data['name']
+
+    if 'description' in data:
+        setting.description = data['description']
+
+    if 'data' in data:
+        setting.data = data['data']
+
+    db.session.commit()
+    return jsonify({'success': True, 'setting': setting.to_dict()})
+
+
+@app.route('/api/settings/<int:setting_id>', methods=['DELETE'])
+def delete_setting(setting_id):
+    """Delete a setting"""
+    setting = Setting.query.get(setting_id)
+    if not setting:
+        return jsonify({'error': 'Setting not found'}), 404
+
+    db.session.delete(setting)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Setting deleted'})
+
+
+# ============== Experiments API ==============
+
+@app.route('/api/experiments', methods=['GET'])
+def list_experiments():
+    """List all experiments"""
+    experiments = Experiment.query.all()
+    return jsonify([e.to_dict() for e in experiments])
+
+
+@app.route('/api/experiments/<int:experiment_id>', methods=['GET'])
+def get_experiment(experiment_id):
+    """Get a specific experiment by ID"""
+    experiment = Experiment.query.get(experiment_id)
+    if experiment:
+        return jsonify(experiment.to_dict())
+    return jsonify({'error': 'Experiment not found'}), 404
+
+
+@app.route('/api/experiments', methods=['POST'])
+def create_experiment():
+    """Create a new experiment with a default empty workflow"""
+    data = request.json
+
+    if not data.get('name'):
+        return jsonify({'error': 'Name is required'}), 400
+
+    # Create experiment
+    experiment = Experiment(
+        name=data['name'],
+        description=data.get('description')
+    )
+    db.session.add(experiment)
+    db.session.flush()  # Get the experiment ID
+
+    # Create default empty workflow for this experiment
+    workflow_id = f"exp_{experiment.id}_workflow_{uuid.uuid4().hex[:8]}"
+    default_workflow = Workflow(
+        id=workflow_id,
+        name=f"{data['name']} - Default Workflow",
+        experiment_id=experiment.id
+    )
+    db.session.add(default_workflow)
+
+    db.session.commit()
+    return jsonify({'success': True, 'experiment': experiment.to_dict()}), 201
+
+
+@app.route('/api/experiments/<int:experiment_id>', methods=['PUT'])
+def update_experiment(experiment_id):
+    """Update an existing experiment"""
+    experiment = Experiment.query.get(experiment_id)
+    if not experiment:
+        return jsonify({'error': 'Experiment not found'}), 404
+
+    data = request.json
+
+    if 'name' in data:
+        experiment.name = data['name']
+
+    if 'description' in data:
+        experiment.description = data['description']
+
+    db.session.commit()
+    return jsonify({'success': True, 'experiment': experiment.to_dict()})
+
+
+@app.route('/api/experiments/<int:experiment_id>', methods=['DELETE'])
+def delete_experiment(experiment_id):
+    """Delete an experiment and all its workflows"""
+    experiment = Experiment.query.get(experiment_id)
+    if not experiment:
+        return jsonify({'error': 'Experiment not found'}), 404
+
+    db.session.delete(experiment)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Experiment deleted'})
+
+
+@app.route('/api/experiments/<int:experiment_id>/workflows', methods=['POST'])
+def add_workflow_to_experiment(experiment_id):
+    """Add a new workflow to an experiment"""
+    experiment = Experiment.query.get(experiment_id)
+    if not experiment:
+        return jsonify({'error': 'Experiment not found'}), 404
+
+    data = request.json
+    workflow_id = data.get('id') or f"exp_{experiment_id}_workflow_{uuid.uuid4().hex[:8]}"
+
+    # Check if workflow ID already exists
+    if Workflow.query.get(workflow_id):
+        return jsonify({'error': 'Workflow with this ID already exists'}), 400
+
+    workflow = Workflow(
+        id=workflow_id,
+        name=data.get('name', 'New Workflow'),
+        experiment_id=experiment_id
+    )
+    db.session.add(workflow)
+    db.session.commit()
+
+    return jsonify({'success': True, 'workflow': workflow.to_dict()}), 201
 
 
 if __name__ == '__main__':

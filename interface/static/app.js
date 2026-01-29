@@ -36,6 +36,7 @@ const workflows = {
 
 // State
 let currentWorkflowId = 'main';
+let currentExperiment = null; // Currently selected experiment { id, name }
 let breadcrumbs = [{ id: 'main', name: 'Main Workflow' }];
 let nodeElements = {};
 let nodeIdCounter = 1000; // Counter for generating unique node IDs
@@ -417,6 +418,37 @@ function updateBreadcrumbs() {
     const container = document.getElementById('breadcrumbs');
     container.innerHTML = '';
 
+    // Add experiment name first if selected
+    if (currentExperiment) {
+        const expButton = document.createElement('button');
+        expButton.textContent = currentExperiment.name;
+        expButton.style.cssText = `
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            background: #7c3aed;
+            color: white;
+        `;
+        expButton.addEventListener('mouseenter', () => {
+            expButton.style.background = '#6d28d9';
+        });
+        expButton.addEventListener('mouseleave', () => {
+            expButton.style.background = '#7c3aed';
+        });
+        expButton.addEventListener('click', () => {
+            navigateToPage('experiments');
+        });
+        container.appendChild(expButton);
+
+        // Add separator after experiment
+        const expSeparator = document.createElement('span');
+        expSeparator.textContent = '›';
+        expSeparator.style.color = '#9ca3af';
+        container.appendChild(expSeparator);
+    }
+
     breadcrumbs.forEach((crumb, index) => {
         const button = document.createElement('button');
         button.textContent = crumb.name;
@@ -459,23 +491,9 @@ function updateBreadcrumbs() {
 // Window resize handler
 window.addEventListener('resize', drawEdges);
 
-// Sidebar toggle
+// Sidebar (no toggle needed, icon-only mode)
 function initSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const toggle = document.getElementById('sidebar-toggle');
-
-    // Load saved state
-    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-    if (isCollapsed) {
-        sidebar.classList.add('collapsed');
-    }
-
-    toggle.addEventListener('click', () => {
-        sidebar.classList.toggle('collapsed');
-        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-        // Redraw edges after sidebar animation
-        setTimeout(drawEdges, 300);
-    });
+    // Sidebar is now icon-only with tooltips, no toggle needed
 }
 
 // Help/Instructions toggle
@@ -980,9 +998,530 @@ async function saveWorkflow() {
     }
 }
 
+// ============== Page Navigation ==============
+
+let currentPage = 'workflows';
+
+function initNavigation() {
+    const navLinks = document.querySelectorAll('.sidebar-link[data-page]');
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const page = link.dataset.page;
+            navigateToPage(page);
+        });
+    });
+}
+
+function navigateToPage(page) {
+    currentPage = page;
+
+    // Update nav links
+    document.querySelectorAll('.sidebar-link[data-page]').forEach(link => {
+        link.classList.toggle('active', link.dataset.page === page);
+    });
+
+    // Update page content
+    document.querySelectorAll('.page-content').forEach(pageEl => {
+        pageEl.classList.toggle('active', pageEl.id === `page-${page}`);
+    });
+
+    // Load page-specific data
+    if (page === 'settings') {
+        loadPlatforms();
+    } else if (page === 'experiments') {
+        loadExperiments();
+    }
+
+    // Redraw edges when returning to workflows
+    if (page === 'workflows') {
+        setTimeout(drawEdges, 100);
+    }
+}
+
+// ============== Settings / Platforms ==============
+
+let platformsData = [];
+
+function initSettings() {
+    const addBtn = document.getElementById('add-platform-btn');
+    const modal = document.getElementById('platform-modal');
+    const form = document.getElementById('platform-form');
+    const closeBtn = document.getElementById('platform-modal-close');
+    const cancelBtn = document.getElementById('platform-cancel');
+    const backdrop = modal.querySelector('.modal-backdrop');
+
+    // Open modal for new platform
+    addBtn.addEventListener('click', () => {
+        openPlatformModal();
+    });
+
+    // Close modal
+    closeBtn.addEventListener('click', closePlatformModal);
+    cancelBtn.addEventListener('click', closePlatformModal);
+    backdrop.addEventListener('click', closePlatformModal);
+
+    // Form submit
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        savePlatform();
+    });
+}
+
+function openPlatformModal(platform = null) {
+    const modal = document.getElementById('platform-modal');
+    const title = document.getElementById('platform-modal-title');
+    const idInput = document.getElementById('platform-id');
+    const nameInput = document.getElementById('platform-name');
+    const descInput = document.getElementById('platform-description');
+    const hostInput = document.getElementById('platform-host');
+
+    if (platform) {
+        title.textContent = 'Edit Platform';
+        idInput.value = platform.id;
+        nameInput.value = platform.name;
+        descInput.value = platform.description || '';
+        hostInput.value = platform.data?.host || '';
+    } else {
+        title.textContent = 'Add Platform';
+        idInput.value = '';
+        nameInput.value = '';
+        descInput.value = '';
+        hostInput.value = '';
+    }
+
+    modal.classList.remove('hidden');
+    nameInput.focus();
+}
+
+function closePlatformModal() {
+    const modal = document.getElementById('platform-modal');
+    modal.classList.add('hidden');
+}
+
+async function loadPlatforms() {
+    try {
+        const response = await fetch('/api/settings?category=platform');
+        platformsData = await response.json();
+        renderPlatformsList();
+    } catch (error) {
+        console.error('Error loading platforms:', error);
+    }
+}
+
+function renderPlatformsList() {
+    const list = document.getElementById('platforms-list');
+
+    if (platformsData.length === 0) {
+        list.innerHTML = '<div class="settings-empty">No platforms configured yet.</div>';
+        return;
+    }
+
+    list.innerHTML = platformsData.map(platform => `
+        <div class="settings-item" data-id="${platform.id}">
+            <div class="settings-item-info">
+                <p class="settings-item-name">${escapeHtml(platform.name)}</p>
+                ${platform.description ? `<p class="settings-item-desc">${escapeHtml(platform.description)}</p>` : ''}
+                <p class="settings-item-host">${escapeHtml(platform.data?.host || 'No host')}</p>
+            </div>
+            <div class="settings-item-actions">
+                <button class="settings-item-btn edit" title="Edit" onclick="editPlatform(${platform.id})">
+                    <i class="fa-solid fa-pen"></i>
+                </button>
+                <button class="settings-item-btn delete" title="Delete" onclick="deletePlatform(${platform.id})">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function editPlatform(id) {
+    const platform = platformsData.find(p => p.id === id);
+    if (platform) {
+        openPlatformModal(platform);
+    }
+}
+
+async function savePlatform() {
+    const idInput = document.getElementById('platform-id');
+    const nameInput = document.getElementById('platform-name');
+    const descInput = document.getElementById('platform-description');
+    const hostInput = document.getElementById('platform-host');
+
+    const data = {
+        category: 'platform',
+        name: nameInput.value.trim(),
+        description: descInput.value.trim() || null,
+        data: { host: hostInput.value.trim() }
+    };
+
+    try {
+        let response;
+        if (idInput.value) {
+            // Update existing
+            response = await fetch(`/api/settings/${idInput.value}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+        } else {
+            // Create new
+            response = await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+        }
+
+        if (response.ok) {
+            closePlatformModal();
+            loadPlatforms();
+        } else {
+            const error = await response.json();
+            alert(error.error || 'Failed to save platform');
+        }
+    } catch (error) {
+        console.error('Error saving platform:', error);
+        alert('Failed to save platform');
+    }
+}
+
+async function deletePlatform(id) {
+    if (!confirm('Are you sure you want to delete this platform?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/settings/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            loadPlatforms();
+        } else {
+            alert('Failed to delete platform');
+        }
+    } catch (error) {
+        console.error('Error deleting platform:', error);
+        alert('Failed to delete platform');
+    }
+}
+
+// ============== Experiments ==============
+
+let experimentsData = [];
+
+function initExperiments() {
+    const addBtn = document.getElementById('add-experiment-btn');
+    const modal = document.getElementById('experiment-modal');
+    const form = document.getElementById('experiment-form');
+    const closeBtn = document.getElementById('experiment-modal-close');
+    const cancelBtn = document.getElementById('experiment-cancel');
+    const backdrop = modal.querySelector('.modal-backdrop');
+
+    // Open modal for new experiment
+    addBtn.addEventListener('click', () => {
+        openExperimentModal();
+    });
+
+    // Close modal
+    closeBtn.addEventListener('click', closeExperimentModal);
+    cancelBtn.addEventListener('click', closeExperimentModal);
+    backdrop.addEventListener('click', closeExperimentModal);
+
+    // Form submit
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        saveExperiment();
+    });
+}
+
+function openExperimentModal(experiment = null) {
+    const modal = document.getElementById('experiment-modal');
+    const title = document.getElementById('experiment-modal-title');
+    const idInput = document.getElementById('experiment-id');
+    const nameInput = document.getElementById('experiment-name');
+    const descInput = document.getElementById('experiment-description');
+
+    if (experiment) {
+        title.textContent = 'Edit Experiment';
+        idInput.value = experiment.id;
+        nameInput.value = experiment.name;
+        descInput.value = experiment.description || '';
+    } else {
+        title.textContent = 'New Experiment';
+        idInput.value = '';
+        nameInput.value = '';
+        descInput.value = '';
+    }
+
+    modal.classList.remove('hidden');
+    nameInput.focus();
+}
+
+function closeExperimentModal() {
+    const modal = document.getElementById('experiment-modal');
+    modal.classList.add('hidden');
+}
+
+async function loadExperiments() {
+    try {
+        const response = await fetch('/api/experiments');
+        experimentsData = await response.json();
+        renderExperimentsList();
+    } catch (error) {
+        console.error('Error loading experiments:', error);
+    }
+}
+
+function renderExperimentsList() {
+    const list = document.getElementById('experiments-list');
+
+    if (experimentsData.length === 0) {
+        list.innerHTML = '<div class="settings-empty">No experiments yet. Create your first experiment!</div>';
+        return;
+    }
+
+    list.innerHTML = experimentsData.map(experiment => {
+        const isSelected = currentExperiment && currentExperiment.id === experiment.id;
+        const workflowsList = experiment.workflows && experiment.workflows.length > 0
+            ? `<div class="experiment-workflows">
+                <div class="experiment-workflows-header">
+                    <i class="fa-solid fa-sitemap"></i>
+                    Workflows (${experiment.workflows.length})
+                </div>
+                <ul class="experiment-workflows-list">
+                    ${experiment.workflows.map(wf => `
+                        <li class="experiment-workflow-item">
+                            <div class="workflow-item-info" onclick="openWorkflow(${experiment.id}, '${wf.id}')">
+                                <i class="fa-solid fa-diagram-project"></i>
+                                <span>${escapeHtml(wf.name)}</span>
+                            </div>
+                            <button class="workflow-item-delete" title="Delete workflow" onclick="event.stopPropagation(); deleteWorkflow('${wf.id}')">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </li>
+                    `).join('')}
+                </ul>
+                <button class="experiment-add-workflow-btn" onclick="addWorkflowToExperiment(${experiment.id})">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Workflow
+                </button>
+            </div>`
+            : `<div class="experiment-workflows">
+                <p class="experiment-no-workflows">No workflows yet</p>
+                <button class="experiment-add-workflow-btn" onclick="addWorkflowToExperiment(${experiment.id})">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Workflow
+                </button>
+            </div>`;
+
+        return `
+        <div class="experiment-card ${isSelected ? 'selected' : ''}" data-id="${experiment.id}">
+            <div class="experiment-header">
+                <div class="experiment-info">
+                    <p class="experiment-name">
+                        ${isSelected ? '<i class="fa-solid fa-check-circle" style="color: #22c55e; margin-right: 0.5rem;"></i>' : ''}
+                        ${escapeHtml(experiment.name)}
+                    </p>
+                    ${experiment.description ? `<p class="experiment-desc">${escapeHtml(experiment.description)}</p>` : ''}
+                </div>
+                <div class="experiment-actions">
+                    <button class="settings-item-btn ${isSelected ? 'active' : ''}" title="${isSelected ? 'Selected' : 'Select experiment'}" onclick="selectExperiment(${experiment.id})">
+                        <i class="fa-solid ${isSelected ? 'fa-check' : 'fa-arrow-pointer'}"></i>
+                    </button>
+                    <button class="settings-item-btn edit" title="Edit" onclick="editExperiment(${experiment.id})">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button class="settings-item-btn delete" title="Delete" onclick="deleteExperiment(${experiment.id})">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            ${workflowsList}
+        </div>
+    `}).join('');
+}
+
+function editExperiment(id) {
+    const experiment = experimentsData.find(e => e.id === id);
+    if (experiment) {
+        openExperimentModal(experiment);
+    }
+}
+
+async function saveExperiment() {
+    const idInput = document.getElementById('experiment-id');
+    const nameInput = document.getElementById('experiment-name');
+    const descInput = document.getElementById('experiment-description');
+
+    const data = {
+        name: nameInput.value.trim(),
+        description: descInput.value.trim() || null
+    };
+
+    try {
+        let response;
+        if (idInput.value) {
+            // Update existing
+            response = await fetch(`/api/experiments/${idInput.value}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+        } else {
+            // Create new (this will also create a default empty workflow)
+            response = await fetch('/api/experiments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+        }
+
+        if (response.ok) {
+            closeExperimentModal();
+            loadExperiments();
+        } else {
+            const error = await response.json();
+            alert(error.error || 'Failed to save experiment');
+        }
+    } catch (error) {
+        console.error('Error saving experiment:', error);
+        alert('Failed to save experiment');
+    }
+}
+
+async function deleteExperiment(id) {
+    if (!confirm('Are you sure you want to delete this experiment and all its workflows?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/experiments/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            loadExperiments();
+        } else {
+            alert('Failed to delete experiment');
+        }
+    } catch (error) {
+        console.error('Error deleting experiment:', error);
+        alert('Failed to delete experiment');
+    }
+}
+
+function selectExperiment(experimentId) {
+    const experiment = experimentsData.find(e => e.id === experimentId);
+    if (experiment) {
+        currentExperiment = { id: experiment.id, name: experiment.name };
+        renderExperimentsList();
+        // Also update breadcrumbs if we're on workflows page
+        if (currentPage === 'workflows') {
+            updateBreadcrumbs();
+        }
+    }
+}
+
+function openWorkflow(experimentId, workflowId) {
+    const experiment = experimentsData.find(e => e.id === experimentId);
+    if (!experiment) return;
+
+    const workflow = experiment.workflows.find(w => w.id === workflowId);
+    if (!workflow) return;
+
+    // Set as current experiment
+    currentExperiment = { id: experiment.id, name: experiment.name };
+
+    // Navigate to workflows page
+    navigateToPage('workflows');
+
+    // Load the workflow if not already in local data
+    if (!workflows[workflowId]) {
+        workflows[workflowId] = {
+            id: workflowId,
+            name: workflow.name,
+            nodes: [],
+            edges: []
+        };
+    }
+
+    breadcrumbs = [{ id: workflowId, name: workflow.name }];
+    loadWorkflow(workflowId);
+}
+
+async function addWorkflowToExperiment(experimentId) {
+    const name = prompt('Enter workflow name:');
+    if (!name || !name.trim()) return;
+
+    try {
+        const response = await fetch(`/api/experiments/${experimentId}/workflows`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name.trim() })
+        });
+
+        if (response.ok) {
+            loadExperiments();
+        } else {
+            const error = await response.json();
+            alert(error.error || 'Failed to add workflow');
+        }
+    } catch (error) {
+        console.error('Error adding workflow:', error);
+        alert('Failed to add workflow');
+    }
+}
+
+async function deleteWorkflow(workflowId) {
+    if (!confirm('Are you sure you want to delete this workflow?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/workflow/${workflowId}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            // Remove from local cache if exists
+            if (workflows[workflowId]) {
+                delete workflows[workflowId];
+            }
+            loadExperiments();
+        } else {
+            alert('Failed to delete workflow');
+        }
+    } catch (error) {
+        console.error('Error deleting workflow:', error);
+        alert('Failed to delete workflow');
+    }
+}
+
+function openExperimentWorkflows(experimentId) {
+    const experiment = experimentsData.find(e => e.id === experimentId);
+    if (experiment && experiment.workflows && experiment.workflows.length > 0) {
+        // Open the first workflow
+        openWorkflow(experimentId, experiment.workflows[0].id);
+    }
+}
+
 // Start the app
 initSidebar();
 initHelpToggle();
+initNavigation();
+initSettings();
+initExperiments();
 initCanvasToolbar();
 initPiecesPanel();
 initPiecesSearch();
