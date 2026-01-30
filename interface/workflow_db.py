@@ -9,6 +9,7 @@ import uuid
 import os
 import json
 import glob
+import subprocess
 
 # Initialize Flask app
 app = Flask(__name__, static_folder='static')
@@ -189,6 +190,22 @@ if not os.path.isdir(PIECES_BASE_PATH):
     PIECES_BASE_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'pieces')
 
 
+def get_git_hash(file_path):
+    """Compute git hash-object for a file"""
+    try:
+        result = subprocess.run(
+            ['git', 'hash-object', file_path],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0:
+            return result.stdout.strip()
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        pass
+    return None
+
+
 @app.route('/api/piece-directories', methods=['GET'])
 def list_piece_directories():
     """List available piece directories by scanning the pieces folder"""
@@ -221,13 +238,17 @@ def list_pieces(directory):
             piece_dir = os.path.dirname(metadata_path)
             category = os.path.basename(os.path.dirname(piece_dir))
 
+            # Compute git hash for the metadata file
+            git_hash = get_git_hash(metadata_path)
+
             pieces.append({
                 'name': metadata.get('name', 'Unknown'),
                 'description': metadata.get('description', ''),
                 'node_label': style.get('node_label', metadata.get('name', 'Unknown')),
                 'icon_class_name': style.get('icon_class_name', 'fa-solid:cube'),
                 'category': category,
-                'tags': metadata.get('tags', [])
+                'tags': metadata.get('tags', []),
+                'git_hash': git_hash
             })
         except (json.JSONDecodeError, IOError) as e:
             continue
