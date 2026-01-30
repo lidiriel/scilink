@@ -156,8 +156,8 @@ body, html {
     overflow: hidden;
 }
 
-/* Pieces Panel (Right) */
-.pieces-panel {
+/* ============== Generic Side Panel ============== */
+.side-panel {
     width: 280px;
     min-width: 280px;
     background: #ffffff;
@@ -167,12 +167,12 @@ body, html {
     transition: all 0.3s ease;
 }
 
-.pieces-panel.collapsed {
+.side-panel.collapsed {
     width: 40px;
     min-width: 40px;
 }
 
-.pieces-header {
+.side-panel-header {
     padding: 0.75rem 1rem;
     border-bottom: 1px solid #e5e7eb;
     background: #f9fafb;
@@ -181,7 +181,7 @@ body, html {
     justify-content: space-between;
 }
 
-.pieces-header h2 {
+.side-panel-header h2 {
     margin: 0;
     font-size: 1rem;
     font-weight: 600;
@@ -191,12 +191,12 @@ body, html {
     transition: opacity 0.2s;
 }
 
-.pieces-panel.collapsed .pieces-header h2 {
+.side-panel.collapsed .side-panel-header h2 {
     opacity: 0;
     width: 0;
 }
 
-.pieces-toggle {
+.side-panel-toggle {
     background: none;
     border: none;
     color: #6b7280;
@@ -209,21 +209,21 @@ body, html {
     transition: all 0.2s;
 }
 
-.pieces-toggle:hover {
+.side-panel-toggle:hover {
     background: #e5e7eb;
     color: #1f2937;
 }
 
-.pieces-toggle i {
+.side-panel-toggle i {
     font-size: 14px;
     transition: transform 0.3s ease;
 }
 
-.pieces-panel:not(.collapsed) .pieces-toggle i {
+.side-panel:not(.collapsed) .side-panel-toggle i {
     transform: rotate(180deg);
 }
 
-.pieces-content {
+.side-panel-content {
     flex: 1;
     padding: 0.75rem;
     overflow-y: auto;
@@ -233,19 +233,19 @@ body, html {
     gap: 0.75rem;
 }
 
-.pieces-panel.collapsed .pieces-content {
+.side-panel.collapsed .side-panel-content {
     opacity: 0;
     padding: 0;
     overflow: hidden;
 }
 
-/* Pieces Search */
-.pieces-search {
+/* Side Panel Search */
+.side-panel-search {
     position: relative;
     width: 100%;
 }
 
-.pieces-search i {
+.side-panel-search i {
     position: absolute;
     left: 0.625rem;
     top: 50%;
@@ -255,7 +255,7 @@ body, html {
     pointer-events: none;
 }
 
-.pieces-search input {
+.side-panel-search input {
     width: 100%;
     padding: 0.5rem 0.5rem 0.5rem 2rem;
     border: 1px solid #d1d5db;
@@ -266,14 +266,167 @@ body, html {
     box-sizing: border-box;
 }
 
-.pieces-search input:focus {
+.side-panel-search input:focus {
     outline: none;
     border-color: #2563eb;
     box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
-.pieces-search input::placeholder {
+.side-panel-search input::placeholder {
     color: #9ca3af;
+}
+
+/* Side Panel List */
+.side-panel-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+/* Side Panel No Results */
+.side-panel-no-results {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    text-align: center;
+    padding: 1rem;
+    font-style: italic;
+}
+
+/* ============== Tabbed Panel ============== */
+.tabbed-panel .side-panel-header {
+    padding: 0;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.side-panel-tabs {
+    display: flex;
+    flex: 1;
+}
+
+.side-panel-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 0.5rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.side-panel-tab:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.side-panel-tab.active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+    background: #eff6ff;
+}
+
+.side-panel-tab i {
+    font-size: 14px;
+}
+
+/* Hide tab labels when collapsed */
+.side-panel.collapsed .side-panel-tab span {
+    display: none;
+}
+
+.side-panel.collapsed .side-panel-tabs {
+    flex-direction: column;
+}
+
+.side-panel.collapsed .side-panel-tab {
+    padding: 0.75rem 0;
+}
+
+/* Tabbed panel header layout */
+.tabbed-panel .side-panel-header {
+    flex-direction: row;
+    padding: 0;
+}
+
+.tabbed-panel .side-panel-toggle {
+    padding: 0.75rem;
+    border-left: 1px solid #e5e7eb;
+}
+
+/* Tab content visibility */
+.side-panel-tab-content {
+    display: none;
+}
+
+.side-panel-tab-content.active {
+    display: flex;
+}
+
+/* Collapsed tabbed panel */
+.side-panel.collapsed .side-panel-tab-content {
+    display: none !important;
+}
+
+.workflow-panel-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem 0.5rem 0.75rem;
+    padding-right: 1.75rem;
+    background: #f3f4f6;
+    border-radius: 4px;
+    cursor: grab;
+    transition: all 0.15s;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.workflow-panel-item:hover {
+    background: #2563eb;
+    color: white;
+}
+
+.workflow-panel-item i {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.workflow-panel-item:hover i {
+    color: white;
+}
+
+/* Workflow panel item dragging state */
+.workflow-panel-item.dragging {
+    opacity: 0.5;
+    background: #ddd6fe;
+    border: 1px dashed #7c3aed;
+}
+
+/* Workflow panel item drag hint */
+.workflow-panel-item::after {
+    content: '';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239ca3af'%3E%3Cpath d='M7 19V17H9V19H7ZM11 19V17H13V19H11ZM15 19V17H17V19H15ZM7 15V13H9V15H7ZM11 15V13H13V15H11ZM15 15V13H17V15H15ZM7 11V9H9V11H7ZM11 11V9H13V11H11ZM15 11V9H17V11H15Z'/%3E%3C/svg%3E") center/contain no-repeat;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.workflow-panel-item:hover::after {
+    opacity: 0.6;
 }
 
 /* Pieces Directory Select */
@@ -361,13 +514,6 @@ body, html {
     text-overflow: ellipsis;
 }
 
-.pieces-no-results {
-    text-align: center;
-    color: #9ca3af;
-    font-size: 0.875rem;
-    padding: 1rem;
-}
-
 /* Piece dragging state */
 .piece-item.dragging {
     opacity: 0.5;
@@ -440,14 +586,7 @@ body, html {
     margin-top: 4px;
 }
 
-svg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-}
+/* Note: #edges SVG styles are defined in the Edge Selection section below */
 
 .edge {
     stroke: #b1b1b7;
@@ -479,6 +618,7 @@ svg {
     transform: translateY(-50%);
     cursor: crosshair;
     opacity: 0;
+    z-index: 100;
     transition: opacity 0.2s, transform 0.15s;
     z-index: 10;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
@@ -492,9 +632,15 @@ svg {
     right: -6px;
 }
 
-/* Show ports on node hover */
+/* Show ports on node hover (but not when edge is selected) */
 .node:hover .node-port {
     opacity: 1;
+}
+
+/* Hide node ports on nodes connected to the selected edge */
+.node.edge-connected .node-port {
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
 /* Port hover effect */
@@ -507,8 +653,10 @@ svg {
 .node-port.port-highlight {
     opacity: 1;
     background: #22c55e;
-    transform: translateY(-50%) scale(1.2);
+    transform: translateY(-50%) scale(1.5);
     animation: pulse-port 0.8s ease-in-out infinite;
+    width: 16px;
+    height: 16px;
 }
 
 @keyframes pulse-port {
@@ -540,6 +688,104 @@ body.connecting .node-port.port-active {
     cursor: not-allowed;
 }
 
+/* Node Delete Button */
+.node-delete-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ef4444;
+    border: 2px solid white;
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.15s ease;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.node:hover .node-delete-btn {
+    opacity: 1;
+}
+
+.node-delete-btn:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+.node-delete-btn i {
+    font-size: 10px;
+}
+
+/* Edge Selection and Handles */
+.edge.selected {
+    stroke: #2563eb !important;
+    stroke-width: 3 !important;
+}
+
+.edge-handle {
+    fill: #2563eb;
+    stroke: white;
+    stroke-width: 2;
+    cursor: grab;
+    transition: all 0.15s ease;
+}
+
+.edge-handle:hover {
+    fill: #1d4ed8;
+    r: 10;
+}
+
+.edge-handle:active {
+    cursor: grabbing;
+}
+
+.edge-delete-btn {
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.edge-delete-btn:hover circle {
+    fill: #dc2626;
+}
+
+.edge-delete-btn:hover {
+    transform: scale(1.1);
+}
+
+/* SVG edges layer - allow pointer events to pass through to nodes */
+#edges {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* The edge path itself should not capture events */
+#edges .edge {
+    pointer-events: none;
+}
+
+/* The hit area captures click events */
+#edges .edge-hit-area {
+    pointer-events: stroke;
+    cursor: pointer;
+}
+
+/* Edge handles and delete button should capture events */
+#edges .edge-handle,
+#edges .edge-delete-btn {
+    pointer-events: auto;
+}
+
 /* Canvas Viewport for zooming/panning */
 #canvas-viewport {
     position: absolute;
@@ -555,6 +801,12 @@ body.connecting .node-port.port-active {
     position: absolute;
     width: 100%;
     height: 100%;
+    pointer-events: none; /* Allow clicks to pass through to edges SVG */
+}
+
+/* Individual nodes should still receive pointer events */
+#canvas-viewport #nodes .node {
+    pointer-events: auto;
 }
 
 /* Zoom Toolbar */

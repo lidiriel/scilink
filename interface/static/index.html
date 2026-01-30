@@ -108,16 +108,27 @@
                             </div>
                         </div>
 
-                        <!-- Right Panel: Pieces -->
-                        <aside id="pieces-panel" class="pieces-panel">
-                            <div class="pieces-header">
-                                <h2>Pieces</h2>
-                                <button id="pieces-toggle" class="pieces-toggle" title="Toggle panel">
+                        <!-- Right Sidebar with Tabs -->
+                        <aside id="right-sidebar" class="side-panel tabbed-panel">
+                            <div class="side-panel-header">
+                                <div class="side-panel-tabs">
+                                    <button class="side-panel-tab active" data-tab="pieces" title="Pieces">
+                                        <i class="fa-solid fa-puzzle-piece"></i>
+                                        <span>Pieces</span>
+                                    </button>
+                                    <button class="side-panel-tab" data-tab="workflows" title="Workflows">
+                                        <i class="fa-solid fa-diagram-project"></i>
+                                        <span>Workflows</span>
+                                    </button>
+                                </div>
+                                <button id="sidebar-toggle" class="side-panel-toggle" title="Toggle panel">
                                     <i class="fa-solid fa-chevron-right"></i>
                                 </button>
                             </div>
-                            <div class="pieces-content">
-                                <div class="pieces-search">
+
+                            <!-- Tab: Pieces -->
+                            <div id="tab-pieces" class="side-panel-content side-panel-tab-content active">
+                                <div class="side-panel-search">
                                     <i class="fa-solid fa-search"></i>
                                     <input type="text" id="pieces-search" placeholder="Search pieces...">
                                 </div>
@@ -128,6 +139,17 @@
                                 </div>
                                 <div id="pieces-list" class="pieces-list">
                                     <!-- Pieces will be listed here -->
+                                </div>
+                            </div>
+
+                            <!-- Tab: Workflows -->
+                            <div id="tab-workflows" class="side-panel-content side-panel-tab-content">
+                                <div class="side-panel-search">
+                                    <i class="fa-solid fa-search"></i>
+                                    <input type="text" id="workflows-search" placeholder="Search workflow...">
+                                </div>
+                                <div id="workflows-list" class="side-panel-list">
+                                    <!-- Workflows will be listed here -->
                                 </div>
                             </div>
                         </aside>
@@ -269,7 +291,7 @@
         </div>
     </div>
 
-    <!-- Application Script -->
-    <script src="app.js"></script>
+    <!-- Application Script (ES6 Module) -->
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>
