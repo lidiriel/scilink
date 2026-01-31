@@ -9,7 +9,7 @@ import { initWorkflowsSearch, loadWorkflowsPanel, setLoadWorkflow } from './work
 import { createTabbedPanel } from './tabbed-panel.js';
 import { initNavigation, navigateToPage, setLoadSettings, setLoadExperiments, setLoadDevices } from './navigation.js';
 import { initSettings, loadSettings, editPlatform, deletePlatform } from './settings.js';
-import { initDevices, loadDevices, editDevice, deleteDevice } from './devices.js';
+import { initDevices, loadDevices, editDevice, deleteDevice, loadSidebarDevices } from './devices.js';
 import {
     initExperiments,
     loadExperiments,
@@ -322,7 +322,12 @@ createTabbedPanel({
     panelId: 'right-sidebar',
     toggleId: 'sidebar-toggle',
     storageKey: 'rightSidebarCollapsed',
-    tabStorageKey: 'rightSidebarActiveTab'
+    tabStorageKey: 'rightSidebarActiveTab',
+    onTabChange: (tabId) => {
+        if (tabId === 'installed-devices') {
+            loadSidebarDevices();
+        }
+    }
 });
 
 // Initialize tab content

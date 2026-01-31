@@ -42,6 +42,34 @@ export function addNodeToWorkflow(piece, x, y) {
     renderNode(node);
 }
 
+// Add a device node to the current workflow
+export function addDeviceNodeToWorkflow(device, x, y) {
+    const workflow = workflows[state.currentWorkflowId];
+    if (!workflow) return;
+
+    // Generate unique ID
+    const nodeId = `node_${++state.nodeIdCounter}`;
+
+    // Create device node data
+    const node = {
+        id: nodeId,
+        type: 'device',
+        label: device.label,
+        deviceId: device.id,
+        pieceName: device.piece_name,
+        iconClass: device.icon_class,
+        deviceMode: device.mode,
+        x: Math.max(0, x),
+        y: Math.max(0, y)
+    };
+
+    // Add to workflow data
+    workflow.nodes.push(node);
+
+    // Render the new node
+    renderNode(node);
+}
+
 // Add a composite node (subflow reference) to the current workflow
 export function addCompositeNodeToWorkflow(subworkflow, x, y) {
     const workflow = workflows[state.currentWorkflowId];
@@ -103,7 +131,10 @@ export function deleteNode(nodeId) {
 // Render a single node
 export function renderNode(node) {
     const nodeEl = document.createElement('div');
-    nodeEl.className = 'node' + (node.type === 'composite' ? ' composite' : '');
+    let nodeClass = 'node';
+    if (node.type === 'composite') nodeClass += ' composite';
+    if (node.type === 'device') nodeClass += ' device';
+    nodeEl.className = nodeClass;
     nodeEl.style.left = node.x + 'px';
     nodeEl.style.top = node.y + 'px';
     nodeEl.dataset.nodeId = node.id;
@@ -111,11 +142,17 @@ export function renderNode(node) {
     // Get icon class (use default cube if not specified)
     const iconClass = node.iconClass ? convertIconClass(node.iconClass) : 'fa-solid fa-cube';
 
+    // Add device mode indicator for device nodes
+    const deviceModeIndicator = node.type === 'device' && node.deviceMode
+        ? `<span class="node-device-mode mode-${node.deviceMode}" title="${node.deviceMode}"></span>`
+        : '';
+
     nodeEl.innerHTML = `
         <div class="node-port node-port-input" data-port="input" data-node-id="${node.id}"></div>
         <div class="node-content">
             <i class="node-icon ${iconClass}"></i>
             <div class="node-label">${node.label}</div>
+            ${deviceModeIndicator}
         </div>
         ${node.type === 'composite' ? '<div class="node-hint">Double-click to expand</div>' : ''}
         <div class="node-port node-port-output" data-port="output" data-node-id="${node.id}"></div>

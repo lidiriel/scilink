@@ -331,11 +331,17 @@ async function updateDeviceMode(deviceId, newMode) {
             const device = devicesData.find(d => d.id === parseInt(deviceId));
             if (device) {
                 device.mode = newMode;
-                // Update the card's mode class
+                // Update the card's mode class (devices page)
                 const card = document.querySelector(`.device-card[data-id="${deviceId}"]`);
                 if (card) {
                     card.classList.remove('mode-activate', 'mode-deactivate', 'mode-simulate');
                     card.classList.add(getModeClass(newMode));
+                }
+                // Update sidebar item class
+                const sidebarItem = document.querySelector(`.sidebar-device-item[data-id="${deviceId}"]`);
+                if (sidebarItem) {
+                    sidebarItem.classList.remove('mode-activate', 'mode-deactivate', 'mode-simulate');
+                    sidebarItem.classList.add(getModeClass(newMode));
                 }
             }
         } else {
@@ -344,6 +350,73 @@ async function updateDeviceMode(deviceId, newMode) {
     } catch (error) {
         console.error('Error updating device mode:', error);
     }
+}
+
+// Render devices in the sidebar (workflow page)
+export async function loadSidebarDevices() {
+    try {
+        const response = await fetch('/api/devices');
+        devicesData = await response.json();
+        renderSidebarDevices();
+    } catch (error) {
+        console.error('Error loading sidebar devices:', error);
+    }
+}
+
+function getModeIcon(mode) {
+    const icons = {
+        'activate': { icon: 'fa-solid fa-plug-circle-check', title: 'Active' },
+        'deactivate': { icon: 'fa-solid fa-plug-circle-xmark', title: 'Deactivated' },
+        'simulate': { icon: 'fa-solid fa-wave-square', title: 'Simulation' }
+    };
+    return icons[mode] || icons['deactivate'];
+}
+
+function renderSidebarDevices() {
+    const list = document.getElementById('sidebar-devices-list');
+    if (!list) return;
+
+    if (devicesData.length === 0) {
+        list.innerHTML = '<div class="side-panel-empty">No devices installed</div>';
+        return;
+    }
+
+    list.innerHTML = devicesData.map(device => {
+        const iconClass = device.icon_class ? convertIconClass(device.icon_class) : 'fa-solid fa-microchip';
+        const deviceMode = device.mode || 'deactivate';
+        const modeInfo = getModeIcon(deviceMode);
+        return `
+            <div class="sidebar-device-item ${getModeClass(deviceMode)}" data-id="${device.id}" draggable="true">
+                <div class="sidebar-device-icon">
+                    <i class="${iconClass}"></i>
+                </div>
+                <div class="sidebar-device-info">
+                    <span class="sidebar-device-label">${escapeHtml(device.label)}</span>
+                    <span class="sidebar-device-type">${escapeHtml(device.piece_name)}</span>
+                </div>
+                <div class="sidebar-device-mode-icon ${getModeClass(deviceMode)}" title="${modeInfo.title}">
+                    <i class="${modeInfo.icon}"></i>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Add drag handlers for dropping devices on canvas
+    list.querySelectorAll('.sidebar-device-item').forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+            const deviceId = parseInt(item.dataset.id);
+            const device = devicesData.find(d => d.id === deviceId);
+            if (device) {
+                e.dataTransfer.setData('application/device', JSON.stringify(device));
+                e.dataTransfer.effectAllowed = 'copy';
+                item.classList.add('dragging');
+            }
+        });
+
+        item.addEventListener('dragend', () => {
+            item.classList.remove('dragging');
+        });
+    });
 }
 
 function getDeviceMode() {

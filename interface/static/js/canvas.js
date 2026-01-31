@@ -1,7 +1,7 @@
 // Canvas drop zone and keyboard shortcuts
 import { state } from './state.js';
 import { deselectEdge, deleteEdge } from './edges.js';
-import { addNodeToWorkflow, addCompositeNodeToWorkflow } from './nodes.js';
+import { addNodeToWorkflow, addCompositeNodeToWorkflow, addDeviceNodeToWorkflow } from './nodes.js';
 
 // Initialize canvas as drop zone for pieces
 export function initCanvasDropZone() {
@@ -44,6 +44,14 @@ export function initCanvasDropZone() {
         if (workflowData) {
             const workflow = JSON.parse(workflowData);
             addCompositeNodeToWorkflow(workflow, x, y);
+            return;
+        }
+
+        // Check if it's a device drop
+        const deviceData = e.dataTransfer.getData('application/device');
+        if (deviceData) {
+            const device = JSON.parse(deviceData);
+            addDeviceNodeToWorkflow(device, x, y);
             return;
         }
 

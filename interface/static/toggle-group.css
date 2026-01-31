@@ -36,5 +36,5 @@
 }
 
 .toggle-group input[type="radio"]:checked + label.mode-simulate {
-  color: #2196f3;
+  color: #f59e0b;
 }

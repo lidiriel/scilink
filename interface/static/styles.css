@@ -292,6 +292,109 @@ body, html {
     font-style: italic;
 }
 
+.side-panel-empty {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+/* Sidebar Device Items */
+.sidebar-device-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin: 0.25rem 0.5rem;
+}
+
+.sidebar-device-item.mode-activate {
+    border-left: 3px solid #22c55e;
+}
+
+.sidebar-device-item.mode-deactivate {
+    border-left: 3px solid #9ca3af;
+}
+
+.sidebar-device-item.mode-simulate {
+    border-left: 3px solid #f59e0b;
+}
+
+.sidebar-device-item[draggable="true"] {
+    cursor: grab;
+}
+
+.sidebar-device-item[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+.sidebar-device-item.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+}
+
+.sidebar-device-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: #eff6ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2563eb;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+}
+
+.sidebar-device-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-device-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-device-type {
+    font-size: 0.625rem;
+    color: #6b7280;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-device-mode-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+}
+
+.sidebar-device-mode-icon.mode-activate {
+    color: #22c55e;
+}
+
+.sidebar-device-mode-icon.mode-deactivate {
+    color: #9ca3af;
+}
+
+.sidebar-device-mode-icon.mode-simulate {
+    color: #f59e0b;
+}
+
 /* ============== Tabbed Panel ============== */
 .tabbed-panel .side-panel-header {
     padding: 0;
@@ -570,6 +673,39 @@ body, html {
 
 .node.composite .node-icon {
     color: white;
+}
+
+.node.device {
+    background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
+    color: white;
+    border-color: #047857;
+}
+
+.node.device .node-icon {
+    color: white;
+}
+
+.node-device-mode {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+}
+
+.node-device-mode.mode-activate {
+    background: #22c55e;
+    box-shadow: 0 0 4px #22c55e;
+}
+
+.node-device-mode.mode-deactivate {
+    background: #9ca3af;
+}
+
+.node-device-mode.mode-simulate {
+    background: #f59e0b;
+    box-shadow: 0 0 4px #f59e0b;
 }
 
 .node-label {

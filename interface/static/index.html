@@ -117,13 +117,17 @@
                         <aside id="right-sidebar" class="side-panel tabbed-panel">
                             <div class="side-panel-header">
                                 <div class="side-panel-tabs">
-                                    <button class="side-panel-tab active" data-tab="pieces" title="Pieces">
-                                        <i class="fa-solid fa-puzzle-piece"></i>
-                                        <span>Pieces</span>
+                                    <button class="side-panel-tab active" data-tab="pieces" title="Blocks">
+                                        <i class="fa-solid fa-cube"></i>
+                                        <span>Blocks</span>
                                     </button>
                                     <button class="side-panel-tab" data-tab="workflows" title="Workflows">
                                         <i class="fa-solid fa-diagram-project"></i>
                                         <span>Workflows</span>
+                                    </button>
+                                    <button class="side-panel-tab" data-tab="installed-devices" title="Installed Devices">
+                                        <i class="fa-solid fa-microchip"></i>
+                                        <span>Devices</span>
                                     </button>
                                 </div>
                                 <button id="sidebar-toggle" class="side-panel-toggle" title="Toggle panel">
@@ -131,11 +135,11 @@
                                 </button>
                             </div>
 
-                            <!-- Tab: Pieces -->
+                            <!-- Tab: Blocks -->
                             <div id="tab-pieces" class="side-panel-content side-panel-tab-content active">
                                 <div class="side-panel-search">
                                     <i class="fa-solid fa-search"></i>
-                                    <input type="text" id="pieces-search" placeholder="Search pieces...">
+                                    <input type="text" id="pieces-search" placeholder="Search blocks...">
                                 </div>
                                 <div class="pieces-directory-select">
                                     <select id="pieces-directory">
@@ -155,6 +159,13 @@
                                 </div>
                                 <div id="workflows-list" class="side-panel-list">
                                     <!-- Workflows will be listed here -->
+                                </div>
+                            </div>
+
+                            <!-- Tab: Installed Devices -->
+                            <div id="tab-installed-devices" class="side-panel-content side-panel-tab-content">
+                                <div id="sidebar-devices-list" class="side-panel-list">
+                                    <!-- Installed devices will be listed here -->
                                 </div>
                             </div>
                         </aside>
