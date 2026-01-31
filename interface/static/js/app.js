@@ -7,8 +7,9 @@ import { initCanvasDropZone, initKeyboardShortcuts } from './canvas.js';
 import { initPiecesSearch, loadPieceDirectories } from './pieces.js';
 import { initWorkflowsSearch, loadWorkflowsPanel, setLoadWorkflow } from './workflows-panel.js';
 import { createTabbedPanel } from './tabbed-panel.js';
-import { initNavigation, navigateToPage, setLoadSettings, setLoadExperiments } from './navigation.js';
+import { initNavigation, navigateToPage, setLoadSettings, setLoadExperiments, setLoadDevices } from './navigation.js';
 import { initSettings, loadSettings, editPlatform, deletePlatform } from './settings.js';
+import { initDevices, loadDevices, editDevice, deleteDevice } from './devices.js';
 import {
     initExperiments,
     loadExperiments,
@@ -286,6 +287,7 @@ setExpLoadWorkflow(loadWorkflow);
 setUpdateBreadcrumbs(updateBreadcrumbs);
 setLoadSettings(loadSettings);
 setLoadExperiments(loadExperiments);
+setLoadDevices(loadDevices);
 
 // Expose functions to window for onclick handlers in HTML
 window.appFunctions = {
@@ -298,7 +300,9 @@ window.appFunctions = {
     addWorkflowToExperiment,
     runWorkflow,
     editWorkflow,
-    deleteWorkflow
+    deleteWorkflow,
+    editDevice,
+    deleteDevice
 };
 
 // Window resize handler
@@ -310,6 +314,7 @@ initHelpToggle();
 initNavigation();
 initSettings();
 initExperiments();
+initDevices();
 initCanvasToolbar();
 
 // Initialize tabbed sidebar panel

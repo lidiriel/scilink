@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS nodes CASCADE;
 DROP TABLE IF EXISTS workflows CASCADE;
 DROP TABLE IF EXISTS experiments CASCADE;
 DROP TABLE IF EXISTS settings CASCADE;
+DROP TABLE IF EXISTS devices_installed CASCADE;
 
 -- Create experiments table
 CREATE TABLE experiments (
@@ -69,12 +70,29 @@ CREATE TABLE settings (
     UNIQUE(category, name)
 );
 
+-- Create devices_installed table
+CREATE TABLE devices_installed (
+    id SERIAL PRIMARY KEY,
+    piece_name VARCHAR(255) NOT NULL,
+    label VARCHAR(255) NOT NULL,
+    device_type VARCHAR(100) NOT NULL,
+    icon_class VARCHAR(100),
+    description TEXT,
+    connection_string VARCHAR(500),
+    mode VARCHAR(50) DEFAULT 'deactivate',
+    data JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Create indexes for better query performance
 CREATE INDEX idx_nodes_workflow_id ON nodes(workflow_id);
 CREATE INDEX idx_edges_workflow_id ON edges(workflow_id);
 CREATE INDEX idx_workflows_parent_id ON workflows(parent_id);
 CREATE INDEX idx_workflows_experiment_id ON workflows(experiment_id);
 CREATE INDEX idx_settings_category ON settings(category);
+CREATE INDEX idx_devices_installed_piece_name ON devices_installed(piece_name);
+CREATE INDEX idx_devices_installed_mode ON devices_installed(mode);
 
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -99,6 +117,9 @@ CREATE TRIGGER update_edges_updated_at BEFORE UPDATE ON edges
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_settings_updated_at BEFORE UPDATE ON settings
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_devices_installed_updated_at BEFORE UPDATE ON devices_installed
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 

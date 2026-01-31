@@ -160,3 +160,39 @@ class Setting(db.Model):
 
     def __repr__(self):
         return f'<Setting {self.id}: {self.category}/{self.name}>'
+
+
+class DeviceInstalled(db.Model):
+    """Device installed on the platform"""
+    __tablename__ = 'devices_installed'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    piece_name = db.Column(db.String(255), nullable=False)  # Original piece name
+    label = db.Column(db.String(255), nullable=False)  # Custom label for this instance
+    device_type = db.Column(db.String(100), nullable=False)  # e.g., 'sensor', 'actuator', 'controller'
+    icon_class = db.Column(db.String(100), nullable=True)  # Icon class from piece
+    description = db.Column(db.Text, nullable=True)
+    connection_string = db.Column(db.String(500), nullable=True)  # Connection info (IP, serial, etc.)
+    mode = db.Column(db.String(50), default='deactivate')  # 'activate', 'deactivate', 'simulate'
+    data = db.Column(db.JSON, nullable=True)  # Flexible JSON field for device-specific config
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def to_dict(self):
+        """Convert device to dictionary format"""
+        return {
+            'id': self.id,
+            'piece_name': self.piece_name,
+            'label': self.label,
+            'device_type': self.device_type,
+            'icon_class': self.icon_class,
+            'description': self.description,
+            'connection_string': self.connection_string,
+            'mode': self.mode,
+            'data': self.data,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+    def __repr__(self):
+        return f'<DeviceInstalled {self.id}: {self.label} ({self.piece_name})>'

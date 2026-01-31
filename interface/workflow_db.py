@@ -4,7 +4,7 @@ Flask backend for Hierarchical Workflow Designer with PostgreSQL support
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from config import config
-from models import db, Experiment, Workflow, Node, Edge, Setting
+from models import db, Experiment, Workflow, Node, Edge, Setting, DeviceInstalled
 import uuid
 import os
 import json
@@ -256,6 +256,49 @@ def list_pieces(directory):
     return jsonify(pieces)
 
 
+@app.route('/api/device-pieces/<directory>', methods=['GET'])
+def list_device_pieces(directory):
+    """List only device pieces (piece_type='device') in a directory"""
+    base_path = os.path.join(PIECES_BASE_PATH, directory)
+
+    if not os.path.isdir(base_path):
+        return jsonify({'error': f'Directory {directory} not found'}), 404
+
+    pieces = []
+    # Find all metadata.json files recursively
+    pattern = os.path.join(base_path, '**', 'metadata.json')
+    for metadata_path in glob.glob(pattern, recursive=True):
+        try:
+            with open(metadata_path, 'r') as f:
+                metadata = json.load(f)
+
+            # Only include pieces with piece_type='device'
+            if metadata.get('piece_type') != 'device':
+                continue
+
+            # Extract piece info
+            style = metadata.get('style', {})
+            piece_dir = os.path.dirname(metadata_path)
+            category = os.path.basename(os.path.dirname(piece_dir))
+
+            # Compute git hash for the metadata file
+            git_hash = get_git_hash(metadata_path)
+
+            pieces.append({
+                'name': metadata.get('name', 'Unknown'),
+                'description': metadata.get('description', ''),
+                'node_label': style.get('node_label', metadata.get('name', 'Unknown')),
+                'icon_class_name': style.get('icon_class_name', 'fa-solid:cube'),
+                'category': category,
+                'tags': metadata.get('tags', []),
+                'git_hash': git_hash
+            })
+        except (json.JSONDecodeError, IOError):
+            continue
+
+    return jsonify(pieces)
+
+
 # ============== Settings API ==============
 
 @app.route('/api/settings', methods=['GET'])
@@ -451,6 +494,90 @@ def add_workflow_to_experiment(experiment_id):
     db.session.commit()
 
     return jsonify({'success': True, 'workflow': workflow.to_dict()}), 201
+
+
+# ============== Devices API ==============
+
+@app.route('/api/devices', methods=['GET'])
+def list_devices():
+    """List all installed devices"""
+    devices = DeviceInstalled.query.all()
+    return jsonify([d.to_dict() for d in devices])
+
+
+@app.route('/api/devices/<int:device_id>', methods=['GET'])
+def get_device(device_id):
+    """Get a specific device by ID"""
+    device = DeviceInstalled.query.get(device_id)
+    if device:
+        return jsonify(device.to_dict())
+    return jsonify({'error': 'Device not found'}), 404
+
+
+@app.route('/api/devices', methods=['POST'])
+def create_device():
+    """Create a new device"""
+    data = request.json
+
+    if not data.get('piece_name'):
+        return jsonify({'error': 'Piece name is required'}), 400
+    if not data.get('label'):
+        return jsonify({'error': 'Label is required'}), 400
+    if not data.get('device_type'):
+        return jsonify({'error': 'Device type is required'}), 400
+
+    device = DeviceInstalled(
+        piece_name=data['piece_name'],
+        label=data['label'],
+        device_type=data['device_type'],
+        icon_class=data.get('icon_class'),
+        description=data.get('description'),
+        connection_string=data.get('connection_string'),
+        mode=data.get('mode', 'deactivate'),
+        data=data.get('data')
+    )
+    db.session.add(device)
+    db.session.commit()
+
+    return jsonify({'success': True, 'device': device.to_dict()}), 201
+
+
+@app.route('/api/devices/<int:device_id>', methods=['PUT'])
+def update_device(device_id):
+    """Update an existing device"""
+    device = DeviceInstalled.query.get(device_id)
+    if not device:
+        return jsonify({'error': 'Device not found'}), 404
+
+    data = request.json
+
+    if 'label' in data:
+        device.label = data['label']
+    if 'device_type' in data:
+        device.device_type = data['device_type']
+    if 'description' in data:
+        device.description = data['description']
+    if 'connection_string' in data:
+        device.connection_string = data['connection_string']
+    if 'mode' in data:
+        device.mode = data['mode']
+    if 'data' in data:
+        device.data = data['data']
+
+    db.session.commit()
+    return jsonify({'success': True, 'device': device.to_dict()})
+
+
+@app.route('/api/devices/<int:device_id>', methods=['DELETE'])
+def delete_device(device_id):
+    """Delete a device"""
+    device = DeviceInstalled.query.get(device_id)
+    if not device:
+        return jsonify({'error': 'Device not found'}), 404
+
+    db.session.delete(device)
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Device deleted'})
 
 
 if __name__ == '__main__':
