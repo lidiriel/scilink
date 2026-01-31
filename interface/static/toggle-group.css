@@ -1,0 +1,40 @@
+.toggle-group {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px;
+  max-width: max-content;
+}
+
+/* Hide the default radio button */
+.toggle-group input[type="radio"] {
+  /* Visually hide the radio button but keep it accessible via keyboard */
+  opacity: 0;
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+/* Style the radio icon */
+.toggle-group input[type="radio"] + label {
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  color: #9ca3af;
+}
+
+/* Change the color of the label when the radio is checked */
+.toggle-group input[type="radio"]:checked + label.mode-activate {
+  color: #4caf50;
+}
+
+.toggle-group input[type="radio"]:checked + label.mode-deactivate {
+  color: #f44336;
+}
+
+.toggle-group input[type="radio"]:checked + label.mode-simulate {
+  color: #2196f3;
+}

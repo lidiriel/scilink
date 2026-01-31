@@ -13,6 +13,7 @@
 
     <!-- Custom Styles -->
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="toggle-group.css">
 </head>
 <body>
     <div id="root">
@@ -31,6 +32,10 @@
                     <a href="#" class="sidebar-link" data-page="monitor">
                         <i class="fa-solid fa-chart-line"></i>
                         <span class="sidebar-label">Monitor</span>
+                    </a>
+                    <a href="#" class="sidebar-link" data-page="devices">
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="sidebar-label">Devices</span>
                     </a>
                     <a href="#" class="sidebar-link" data-page="settings">
                         <i class="fa-solid fa-gear"></i>
@@ -222,6 +227,110 @@
                     </div>
                     <div class="page-body">
                         <p class="text-muted">Monitor page coming soon...</p>
+                    </div>
+                </div>
+
+                <!-- Page: Devices -->
+                <div id="page-devices" class="page-content">
+                    <div class="page-header">
+                        <h1>Devices</h1>
+                    </div>
+                    <div class="page-body devices-page-layout">
+                        <!-- Device Pieces Panel (Left) -->
+                        <div class="device-pieces-panel">
+                            <div class="panel-header">
+                                <h3><i class="fa-solid fa-puzzle-piece"></i> Available Devices</h3>
+                            </div>
+                            <div class="panel-search">
+                                <i class="fa-solid fa-search"></i>
+                                <input type="text" id="device-pieces-search" placeholder="Search devices...">
+                            </div>
+                            <div class="panel-directory-select">
+                                <select id="device-pieces-directory">
+                                    <!-- Options will be populated dynamically -->
+                                </select>
+                            </div>
+                            <div id="device-pieces-list" class="panel-list">
+                                <!-- Device pieces will be listed here -->
+                            </div>
+                        </div>
+
+                        <!-- Installed Devices Section (Right) -->
+                        <div class="installed-devices-section">
+                            <div class="section-header">
+                                <h2><i class="fa-solid fa-microchip"></i> Installed Devices</h2>
+                                <p>Drag devices from the left panel to install them. Each device can be installed multiple times.</p>
+                            </div>
+
+                            <!-- Drop Zone for Devices -->
+                            <div id="devices-drop-zone" class="devices-drop-zone">
+                                <div id="devices-list" class="devices-grid">
+                                    <!-- Installed devices will be loaded here -->
+                                </div>
+                                <div class="drop-hint">
+                                    <i class="fa-solid fa-arrow-down"></i>
+                                    <span>Drop device here to install</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Device Form Modal -->
+                        <div id="device-modal" class="modal hidden">
+                            <div class="modal-backdrop"></div>
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h3 id="device-modal-title">Install Device</h3>
+                                    <button class="modal-close" id="device-modal-close">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                                <form id="device-form" class="modal-form">
+                                    <input type="hidden" id="device-id">
+                                    <input type="hidden" id="device-piece-name">
+                                    <input type="hidden" id="device-icon-class">
+                                    <div class="form-group">
+                                        <label for="device-label">Label <span class="required">*</span></label>
+                                        <input type="text" id="device-label" required placeholder="e.g., Temperature Sensor #1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="device-type">Category</label>
+                                        <input type="text" id="device-type" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="device-description">Description</label>
+                                        <textarea id="device-description" rows="2" placeholder="Optional description..."></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="device-connection">Connection String</label>
+                                        <input type="text" id="device-connection" placeholder="e.g., 192.168.1.100:502 or /dev/ttyUSB0">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Mode</label>
+                                        <div class="toggle-group">
+                                            <input type="radio" name="device-mode" id="modal-activate" value="activate" />
+                                            <label for="modal-activate" class="mode-activate" title="Activate">
+                                                <i class="fa-solid fa-plug-circle-check"></i>
+                                            </label>
+                                            <input type="radio" name="device-mode" id="modal-deactivate" value="deactivate" checked />
+                                            <label for="modal-deactivate" class="mode-deactivate" title="Deactivate">
+                                                <i class="fa-solid fa-plug-circle-xmark"></i>
+                                            </label>
+                                            <input type="radio" name="device-mode" id="modal-simulate" value="simulate" />
+                                            <label for="modal-simulate" class="mode-simulate" title="Simulate">
+                                                <i class="fa-solid fa-wave-square"></i>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="modal-actions">
+                                        <button type="button" class="btn btn-secondary" id="device-cancel">Cancel</button>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fa-solid fa-save"></i>
+                                            Save
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
