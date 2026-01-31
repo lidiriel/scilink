@@ -6,6 +6,7 @@ import { loadWorkflowsPanel } from './workflows-panel.js';
 // Forward declarations for circular dependencies
 let loadSettingsFn = null;
 let loadExperimentsFn = null;
+let loadDevicesFn = null;
 
 export function setLoadSettings(fn) {
     loadSettingsFn = fn;
@@ -13,6 +14,10 @@ export function setLoadSettings(fn) {
 
 export function setLoadExperiments(fn) {
     loadExperimentsFn = fn;
+}
+
+export function setLoadDevices(fn) {
+    loadDevicesFn = fn;
 }
 
 // Initialize navigation
@@ -47,6 +52,8 @@ export function navigateToPage(page) {
         loadSettingsFn();
     } else if (page === 'experiments' && loadExperimentsFn) {
         loadExperimentsFn();
+    } else if (page === 'devices' && loadDevicesFn) {
+        loadDevicesFn();
     }
 
     // Redraw edges and refresh panel when returning to workflows
