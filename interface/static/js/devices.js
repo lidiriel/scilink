@@ -161,7 +161,9 @@ function renderDevicePieces(filter = '') {
             // Find the piece in the full devicePieces array by name
             const piece = devicePieces.find(p => p.name === pieceName);
             if (piece) {
-                e.dataTransfer.setData('application/device-piece', JSON.stringify(piece));
+                // Include directory info with the piece data
+                const pieceData = { ...piece, directory: currentDirectory };
+                e.dataTransfer.setData('application/device-piece', JSON.stringify(pieceData));
                 e.dataTransfer.effectAllowed = 'copy';
                 item.classList.add('dragging');
             }
