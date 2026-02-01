@@ -74,5 +74,6 @@ export const ZOOM_STEP = 0.1;
 export const panelData = {
     platformsData: [],
     experimentsData: [],
-    currentPieces: []
+    currentPieces: [],
+    currentPiecesDirectory: ''
 };

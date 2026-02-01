@@ -178,6 +178,8 @@ function openDeviceModal(device = null, piece = null) {
     const title = document.getElementById('device-modal-title');
     const idInput = document.getElementById('device-id');
     const pieceNameInput = document.getElementById('device-piece-name');
+    const pieceDirectoryInput = document.getElementById('device-piece-directory');
+    const pieceHashInput = document.getElementById('device-piece-hash');
     const iconClassInput = document.getElementById('device-icon-class');
     const labelInput = document.getElementById('device-label');
     const typeInput = document.getElementById('device-type');
@@ -192,6 +194,8 @@ function openDeviceModal(device = null, piece = null) {
         title.textContent = 'Edit Device';
         idInput.value = device.id;
         pieceNameInput.value = device.piece_name;
+        pieceDirectoryInput.value = device.piece_directory || '';
+        pieceHashInput.value = device.piece_hash || '';
         iconClassInput.value = device.icon_class || '';
         labelInput.value = device.label;
         typeInput.value = device.device_type;
@@ -203,6 +207,8 @@ function openDeviceModal(device = null, piece = null) {
         title.textContent = 'Install Device';
         idInput.value = '';
         pieceNameInput.value = piece.name;
+        pieceDirectoryInput.value = piece.directory || '';
+        pieceHashInput.value = piece.git_hash || '';
         iconClassInput.value = piece.icon_class_name || '';
         labelInput.value = piece.node_label || piece.name;
         typeInput.value = piece.category;
@@ -439,6 +445,8 @@ function setDeviceMode(mode) {
 async function saveDevice() {
     const idInput = document.getElementById('device-id');
     const pieceNameInput = document.getElementById('device-piece-name');
+    const pieceDirectoryInput = document.getElementById('device-piece-directory');
+    const pieceHashInput = document.getElementById('device-piece-hash');
     const iconClassInput = document.getElementById('device-icon-class');
     const labelInput = document.getElementById('device-label');
     const typeInput = document.getElementById('device-type');
@@ -447,6 +455,8 @@ async function saveDevice() {
 
     const data = {
         piece_name: pieceNameInput.value,
+        piece_directory: pieceDirectoryInput.value,
+        piece_hash: pieceHashInput.value || null,
         label: labelInput.value.trim(),
         device_type: typeInput.value,
         icon_class: iconClassInput.value || null,

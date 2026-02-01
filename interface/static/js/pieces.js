@@ -48,6 +48,7 @@ export async function loadPieces(directory) {
     try {
         const response = await fetch(`/api/pieces/${directory}`);
         panelData.currentPieces = await response.json();
+        panelData.currentPiecesDirectory = directory;
         renderPieces();
     } catch (error) {
         console.error('Error loading pieces:', error);
@@ -110,7 +111,9 @@ export function renderPieces(filter = '') {
 
             // Drag start handler
             pieceEl.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('application/json', JSON.stringify(piece));
+                // Include directory info with the piece data
+                const pieceData = { ...piece, directory: panelData.currentPiecesDirectory };
+                e.dataTransfer.setData('application/json', JSON.stringify(pieceData));
                 e.dataTransfer.effectAllowed = 'copy';
                 pieceEl.classList.add('dragging');
             });

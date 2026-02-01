@@ -4,7 +4,7 @@ Flask backend for Hierarchical Workflow Designer with PostgreSQL support
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from config import config
-from models import db, Experiment, Workflow, Node, Edge, Setting, DeviceInstalled
+from models import db, Experiment, Workflow, Node, Edge, Setting, DeviceInstalled, BlockUsed
 import uuid
 import os
 import json
@@ -59,17 +59,37 @@ def update_workflow(workflow_id):
 
     # Update nodes if provided
     if 'nodes' in data:
-        # Remove existing nodes
+        # Remove existing nodes first (they reference blocks_used)
         Node.query.filter_by(workflow_id=workflow_id).delete()
+        # Remove existing blocks_used entries for this workflow
+        BlockUsed.query.filter_by(workflow_id=workflow_id).delete()
 
         # Add new nodes
         for node_data in data['nodes']:
+            node_type = node_data.get('type', 'default')
+            block_id = None
+
+            # Create block_used first for block nodes (default type with piece info)
+            if node_type == 'default' and node_data.get('pieceName'):
+                block_used = BlockUsed(
+                    workflow_id=workflow_id,
+                    piece_name=node_data.get('pieceName'),
+                    piece_directory=node_data.get('pieceDirectory', ''),
+                    piece_hash=node_data.get('pieceHash'),
+                    icon_class=node_data.get('iconClass')
+                )
+                db.session.add(block_used)
+                db.session.flush()  # Get the block_id
+                block_id = block_used.id
+
             node = Node(
                 id=node_data['id'],
                 workflow_id=workflow_id,
-                type=node_data.get('type', 'default'),
+                type=node_type,
                 label=node_data['label'],
                 subflow_id=node_data.get('subflowId'),
+                device_id=node_data.get('deviceId'),
+                block_id=block_id,
                 position_x=node_data['x'],
                 position_y=node_data['y']
             )
@@ -115,12 +135,30 @@ def create_workflow():
     # Add nodes if provided
     if 'nodes' in data:
         for node_data in data['nodes']:
+            node_type = node_data.get('type', 'default')
+            block_id = None
+
+            # Create block_used first for block nodes (default type with piece info)
+            if node_type == 'default' and node_data.get('pieceName'):
+                block_used = BlockUsed(
+                    workflow_id=workflow.id,
+                    piece_name=node_data.get('pieceName'),
+                    piece_directory=node_data.get('pieceDirectory', ''),
+                    piece_hash=node_data.get('pieceHash'),
+                    icon_class=node_data.get('iconClass')
+                )
+                db.session.add(block_used)
+                db.session.flush()  # Get the block_id
+                block_id = block_used.id
+
             node = Node(
                 id=node_data['id'],
                 workflow_id=workflow.id,
-                type=node_data.get('type', 'default'),
+                type=node_type,
                 label=node_data['label'],
                 subflow_id=node_data.get('subflowId'),
+                device_id=node_data.get('deviceId'),
+                block_id=block_id,
                 position_x=node_data['x'],
                 position_y=node_data['y']
             )
@@ -219,7 +257,7 @@ def list_piece_directories():
 
 @app.route('/api/pieces/<directory>', methods=['GET'])
 def list_pieces(directory):
-    """List all pieces in a directory by reading metadata.json files"""
+    """List block pieces in a directory (excludes device pieces)"""
     base_path = os.path.join(PIECES_BASE_PATH, directory)
 
     if not os.path.isdir(base_path):
@@ -232,6 +270,10 @@ def list_pieces(directory):
         try:
             with open(metadata_path, 'r') as f:
                 metadata = json.load(f)
+
+            # Skip device pieces (only return blocks)
+            if metadata.get('piece_type') == 'device':
+                continue
 
             # Extract piece info
             style = metadata.get('style', {})
@@ -521,6 +563,8 @@ def create_device():
 
     if not data.get('piece_name'):
         return jsonify({'error': 'Piece name is required'}), 400
+    if not data.get('piece_directory'):
+        return jsonify({'error': 'Piece directory is required'}), 400
     if not data.get('label'):
         return jsonify({'error': 'Label is required'}), 400
     if not data.get('device_type'):
@@ -528,6 +572,8 @@ def create_device():
 
     device = DeviceInstalled(
         piece_name=data['piece_name'],
+        piece_directory=data['piece_directory'],
+        piece_hash=data.get('piece_hash'),
         label=data['label'],
         device_type=data['device_type'],
         icon_class=data.get('icon_class'),
@@ -574,6 +620,18 @@ def delete_device(device_id):
     device = DeviceInstalled.query.get(device_id)
     if not device:
         return jsonify({'error': 'Device not found'}), 404
+
+    # Check if the device is used in any workflow
+    nodes_using_device = Node.query.filter_by(device_id=device_id).all()
+    if nodes_using_device:
+        workflow_names = set()
+        for node in nodes_using_device:
+            if node.workflow:
+                workflow_names.add(node.workflow.name)
+        workflows_list = ', '.join(sorted(workflow_names)) if workflow_names else 'unknown workflows'
+        return jsonify({
+            'error': f'Cannot delete device: it is used in {len(nodes_using_device)} node(s) in workflow(s): {workflows_list}'
+        }), 409
 
     db.session.delete(device)
     db.session.commit()

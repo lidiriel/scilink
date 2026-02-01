@@ -79,7 +79,6 @@ export async function loadSettings() {
 }
 
 function renderPlatformsList() {
-    const addBtn = document.getElementById('add-platform-btn');
     const list = document.getElementById('platforms-list');
 
     if (!list) return;
@@ -88,7 +87,7 @@ function renderPlatformsList() {
         list.innerHTML = '<div class="settings-empty">No platform configured yet.</div>';
         return;
     }
-    if (addBtn) addBtn.classList.add('hidden');
+
     list.innerHTML = panelData.platformsData.map(platform => `
         <div class="settings-item" data-id="${platform.id}">
             <div class="settings-item-info">
@@ -121,11 +120,26 @@ async function savePlatform() {
     const descInput = document.getElementById('platform-description');
     const hostInput = document.getElementById('platform-host');
 
+    // Validate required fields
+    const name = nameInput.value.trim();
+    const host = hostInput.value.trim();
+
+    if (!name) {
+        alert('Platform name is required');
+        nameInput.focus();
+        return;
+    }
+    if (!host) {
+        alert('Platform host is required');
+        hostInput.focus();
+        return;
+    }
+
     const data = {
         category: 'platform',
-        name: nameInput.value.trim(),
+        name: name,
         description: descInput.value.trim() || null,
-        data: { host: hostInput.value.trim() }
+        data: { host: host }
     };
 
     try {
@@ -150,12 +164,19 @@ async function savePlatform() {
             closePlatformModal();
             loadSettings();
         } else {
-            const error = await response.json();
-            alert(error.error || 'Failed to save platform');
+            let errorMsg = 'Failed to save platform';
+            try {
+                const error = await response.json();
+                errorMsg = error.error || errorMsg;
+            } catch (e) {
+                errorMsg = `Server error: ${response.status} ${response.statusText}`;
+            }
+            console.error('Save platform failed:', response.status, errorMsg);
+            alert(errorMsg);
         }
     } catch (error) {
         console.error('Error saving platform:', error);
-        alert('Failed to save platform');
+        alert(`Failed to save platform: ${error.message}`);
     }
 }
 

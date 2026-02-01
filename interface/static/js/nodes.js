@@ -24,12 +24,14 @@ export function addNodeToWorkflow(piece, x, y) {
     // Generate unique ID
     const nodeId = `node_${++state.nodeIdCounter}`;
 
-    // Create node data
+    // Create node data with piece info for tracking
     const node = {
         id: nodeId,
         type: 'default',
         label: piece.node_label,
         pieceName: piece.name,
+        pieceDirectory: piece.directory || '',
+        pieceHash: piece.git_hash || null,
         iconClass: piece.icon_class_name,
         x: Math.max(0, x),
         y: Math.max(0, y)

@@ -200,14 +200,33 @@ async function saveWorkflow() {
     try {
         // Prepare data for API
         const data = {
-            nodes: workflow.nodes.map(n => ({
-                id: n.id,
-                type: n.type || 'default',
-                label: n.label,
-                subflowId: n.subflowId,
-                x: n.x,
-                y: n.y
-            })),
+            nodes: workflow.nodes.map(n => {
+                const nodeData = {
+                    id: n.id,
+                    type: n.type || 'default',
+                    label: n.label,
+                    x: n.x,
+                    y: n.y
+                };
+                // Composite node (subworkflow)
+                if (n.subflowId) {
+                    nodeData.subflowId = n.subflowId;
+                }
+                // Device node
+                if (n.type === 'device' && n.deviceId) {
+                    nodeData.deviceId = n.deviceId;
+                    nodeData.pieceName = n.pieceName;
+                    nodeData.iconClass = n.iconClass;
+                }
+                // Block node (default type with piece info)
+                if (n.type === 'default' && n.pieceName) {
+                    nodeData.pieceName = n.pieceName;
+                    nodeData.pieceDirectory = n.pieceDirectory;
+                    nodeData.pieceHash = n.pieceHash;
+                    nodeData.iconClass = n.iconClass;
+                }
+                return nodeData;
+            }),
             edges: workflow.edges.map(e => ({
                 id: e.id || `e-${e.from}-${e.to}`,
                 from: e.from,
