@@ -76,6 +76,8 @@ class Node(db.Model):
     type = db.Column(db.String(50), nullable=False, default='default')
     label = db.Column(db.String(255), nullable=False)
     subflow_id = db.Column(db.String(100), db.ForeignKey('workflows.id', ondelete='SET NULL'), nullable=True)
+    device_id = db.Column(db.Integer, db.ForeignKey('devices_installed.id', ondelete='RESTRICT'), nullable=True)
+    block_id = db.Column(db.Integer, db.ForeignKey('blocks_used.id', ondelete='SET NULL'), nullable=True)
     position_x = db.Column(db.Integer, nullable=False)
     position_y = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -84,6 +86,8 @@ class Node(db.Model):
     # Relationships
     workflow = db.relationship('Workflow', back_populates='nodes', foreign_keys=[workflow_id])
     subflow = db.relationship('Workflow', foreign_keys=[subflow_id])
+    device = db.relationship('DeviceInstalled', foreign_keys=[device_id])
+    block = db.relationship('BlockUsed', foreign_keys=[block_id])
 
     def to_dict(self):
         """Convert node to dictionary format"""
@@ -96,6 +100,21 @@ class Node(db.Model):
         }
         if self.subflow_id:
             node_dict['subflowId'] = self.subflow_id
+        if self.device_id:
+            node_dict['deviceId'] = self.device_id
+            # Include device info if relationship is loaded
+            if self.device:
+                node_dict['deviceMode'] = self.device.mode
+                node_dict['pieceName'] = self.device.piece_name
+                node_dict['iconClass'] = self.device.icon_class
+        if self.block_id:
+            node_dict['blockId'] = self.block_id
+            # Include block info if relationship is loaded
+            if self.block:
+                node_dict['pieceName'] = self.block.piece_name
+                node_dict['pieceDirectory'] = self.block.piece_directory
+                node_dict['pieceHash'] = self.block.piece_hash
+                node_dict['iconClass'] = self.block.icon_class
         return node_dict
 
     def __repr__(self):
@@ -168,6 +187,8 @@ class DeviceInstalled(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     piece_name = db.Column(db.String(255), nullable=False)  # Original piece name
+    piece_directory = db.Column(db.String(255), nullable=False)  # Directory the piece came from
+    piece_hash = db.Column(db.String(64), nullable=True)  # Git hash for version tracking
     label = db.Column(db.String(255), nullable=False)  # Custom label for this instance
     device_type = db.Column(db.String(100), nullable=False)  # e.g., 'sensor', 'actuator', 'controller'
     icon_class = db.Column(db.String(100), nullable=True)  # Icon class from piece
@@ -183,6 +204,8 @@ class DeviceInstalled(db.Model):
         return {
             'id': self.id,
             'piece_name': self.piece_name,
+            'piece_directory': self.piece_directory,
+            'piece_hash': self.piece_hash,
             'label': self.label,
             'device_type': self.device_type,
             'icon_class': self.icon_class,
@@ -196,3 +219,38 @@ class DeviceInstalled(db.Model):
 
     def __repr__(self):
         return f'<DeviceInstalled {self.id}: {self.label} ({self.piece_name})>'
+
+
+class BlockUsed(db.Model):
+    """Tracks blocks/pieces used in workflows for version control and auditing"""
+    __tablename__ = 'blocks_used'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    workflow_id = db.Column(db.String(100), db.ForeignKey('workflows.id', ondelete='CASCADE'), nullable=False)
+    piece_name = db.Column(db.String(255), nullable=False)
+    piece_directory = db.Column(db.String(255), nullable=False)
+    piece_hash = db.Column(db.String(64), nullable=True)
+    icon_class = db.Column(db.String(100), nullable=True)
+    config = db.Column(db.JSON, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    workflow = db.relationship('Workflow', backref=db.backref('blocks_used', cascade='all, delete-orphan', lazy='dynamic'))
+
+    def to_dict(self):
+        """Convert block_used to dictionary format"""
+        return {
+            'id': self.id,
+            'workflow_id': self.workflow_id,
+            'piece_name': self.piece_name,
+            'piece_directory': self.piece_directory,
+            'piece_hash': self.piece_hash,
+            'icon_class': self.icon_class,
+            'config': self.config,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+    def __repr__(self):
+        return f'<BlockUsed {self.id}: {self.piece_name} in Workflow {self.workflow_id}>'
