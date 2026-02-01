@@ -50,6 +50,16 @@ function loadWorkflow(workflowId) {
     document.getElementById('edges').innerHTML = '<defs><marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><polygon points="0 0, 10 3, 0 6" fill="#b1b1b7" /></marker></defs>';
     state.nodeElements = {};
 
+    // Update nodeIdCounter based on existing nodes to avoid duplicate IDs
+    let maxNodeId = 0;
+    workflow.nodes.forEach(node => {
+        const match = node.id.match(/^node_(\d+)$/);
+        if (match) {
+            maxNodeId = Math.max(maxNodeId, parseInt(match[1], 10));
+        }
+    });
+    state.nodeIdCounter = maxNodeId;
+
     // Render nodes using the shared renderNode function
     workflow.nodes.forEach(node => renderNode(node));
 

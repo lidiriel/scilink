@@ -273,6 +273,13 @@ export async function openWorkflow(experimentId, workflowId) {
                     type: n.type || 'default',
                     label: n.label,
                     subflowId: n.subflowId,
+                    deviceId: n.deviceId,
+                    deviceMode: n.deviceMode,
+                    blockId: n.blockId,
+                    pieceName: n.pieceName,
+                    pieceDirectory: n.pieceDirectory,
+                    pieceHash: n.pieceHash,
+                    iconClass: n.iconClass,
                     x: n.x,
                     y: n.y
                 })),

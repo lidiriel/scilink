@@ -102,19 +102,21 @@ class Node(db.Model):
             node_dict['subflowId'] = self.subflow_id
         if self.device_id:
             node_dict['deviceId'] = self.device_id
-            # Include device info if relationship is loaded
-            if self.device:
-                node_dict['deviceMode'] = self.device.mode
-                node_dict['pieceName'] = self.device.piece_name
-                node_dict['iconClass'] = self.device.icon_class
+            # Load device info - use explicit query if relationship not loaded
+            device = self.device or DeviceInstalled.query.get(self.device_id)
+            if device:
+                node_dict['deviceMode'] = device.mode
+                node_dict['pieceName'] = device.piece_name
+                node_dict['iconClass'] = device.icon_class
         if self.block_id:
             node_dict['blockId'] = self.block_id
-            # Include block info if relationship is loaded
-            if self.block:
-                node_dict['pieceName'] = self.block.piece_name
-                node_dict['pieceDirectory'] = self.block.piece_directory
-                node_dict['pieceHash'] = self.block.piece_hash
-                node_dict['iconClass'] = self.block.icon_class
+            # Load block info - use explicit query if relationship not loaded
+            block = self.block or BlockUsed.query.get(self.block_id)
+            if block:
+                node_dict['pieceName'] = block.piece_name
+                node_dict['pieceDirectory'] = block.piece_directory
+                node_dict['pieceHash'] = block.piece_hash
+                node_dict['iconClass'] = block.icon_class
         return node_dict
 
     def __repr__(self):
