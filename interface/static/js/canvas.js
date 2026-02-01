@@ -2,11 +2,15 @@
 import { state } from './state.js';
 import { deselectEdge, deleteEdge } from './edges.js';
 import { addNodeToWorkflow, addCompositeNodeToWorkflow, addDeviceNodeToWorkflow } from './nodes.js';
+import { applyViewportTransform } from './zoom.js';
 
 // Initialize canvas as drop zone for pieces
 export function initCanvasDropZone() {
     const canvas = document.getElementById('canvas');
     if (!canvas) return;
+
+    // Left-click panning
+    initLeftClickPan(canvas);
 
     // Click on canvas to deselect edges
     canvas.addEventListener('click', (e) => {
@@ -76,5 +80,69 @@ export function initKeyboardShortcuts() {
             e.preventDefault();
             deleteEdge(state.selectedEdge.index);
         }
+    });
+}
+
+// Initialize left-click panning on canvas
+function initLeftClickPan(canvas) {
+    let isPanning = false;
+    let couldPan = false;
+    let startX = 0;
+    let startY = 0;
+    let startPanX = 0;
+    let startPanY = 0;
+
+    const PAN_THRESHOLD = 5; // Minimum movement to start panning
+
+    // Helper to check if click is on an interactive element
+    function isOnInteractiveElement(target) {
+        return target.closest('.node, .edge-path, .zoom-controls, button, input, select') !== null;
+    }
+
+    canvas.addEventListener('pointerdown', (e) => {
+        // Left mouse button (button === 0) and not on interactive elements
+        if (e.button === 0 && !isOnInteractiveElement(e.target)) {
+            couldPan = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startPanX = state.panX;
+            startPanY = state.panY;
+        }
+    });
+
+    canvas.addEventListener('pointermove', (e) => {
+        if (!couldPan && !isPanning) return;
+
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        // Start panning only after threshold movement
+        if (!isPanning && (Math.abs(dx) > PAN_THRESHOLD || Math.abs(dy) > PAN_THRESHOLD)) {
+            isPanning = true;
+            couldPan = false;
+            canvas.style.cursor = 'grabbing';
+            canvas.setPointerCapture(e.pointerId);
+        }
+
+        if (isPanning) {
+            state.panX = startPanX + dx;
+            state.panY = startPanY + dy;
+            applyViewportTransform();
+        }
+    });
+
+    canvas.addEventListener('pointerup', (e) => {
+        if (isPanning) {
+            isPanning = false;
+            canvas.style.cursor = '';
+            canvas.releasePointerCapture(e.pointerId);
+        }
+        couldPan = false;
+    });
+
+    canvas.addEventListener('pointercancel', () => {
+        isPanning = false;
+        couldPan = false;
+        canvas.style.cursor = '';
     });
 }
