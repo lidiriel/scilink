@@ -453,22 +453,31 @@
 .device-card-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 0.625rem;
     padding: 0.75rem;
     background: #f9fafb;
     border-bottom: 1px solid #e5e7eb;
 }
 
+.device-card-header .device-card-label {
+    margin: 0;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .device-card-icon {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: 8px;
     background: #eff6ff;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #2563eb;
-    font-size: 1rem;
+    font-size: 0.875rem;
+    flex-shrink: 0;
 }
 
 .device-card-status {
@@ -490,18 +499,17 @@
 }
 
 .device-card-body {
-    padding: 0.75rem;
+    padding: 0.5rem 0.75rem;
 }
 
 .device-card-label {
-    margin: 0 0 0.25rem 0;
     font-size: 0.875rem;
     font-weight: 600;
     color: #1f2937;
 }
 
 .device-card-piece {
-    margin: 0 0 0.25rem 0;
+    margin: 0;
     font-size: 0.75rem;
     color: #6b7280;
 }

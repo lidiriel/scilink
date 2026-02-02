@@ -457,9 +457,9 @@ function renderDevicesList() {
                     <div class="device-card-icon">
                         <i class="${iconClass}"></i>
                     </div>
+                    <h4 class="device-card-label">${escapeHtml(device.label)}</h4>
                 </div>
                 <div class="device-card-body">
-                    <h4 class="device-card-label">${escapeHtml(device.label)}</h4>
                     <p class="device-card-piece">${escapeHtml(device.piece_name)}</p>
                     ${busName ? `<p class="device-card-bus"><i class="fa-solid fa-link"></i> ${escapeHtml(busName)}</p>` : ''}
                     ${device.connection_string ? `<p class="device-card-connection">${escapeHtml(device.connection_string)}</p>` : ''}
