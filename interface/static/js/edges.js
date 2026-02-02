@@ -1,6 +1,48 @@
 // Edge drawing, selection, and management
 import { workflows, state, ZOOM_MIN, ZOOM_MAX } from './state.js';
-import { createSmoothPath } from './utils.js';
+import { createSmoothPathMixed } from './utils.js';
+
+// Get output port position for a node based on its orientation
+function getOutputPortPosition(node, element) {
+    if (node.orientation === 'vertical') {
+        // Vertical: output at bottom center
+        return {
+            x: node.x + element.offsetWidth / 2,
+            y: node.y + element.offsetHeight
+        };
+    }
+    // Horizontal: output at right center
+    return {
+        x: node.x + element.offsetWidth,
+        y: node.y + element.offsetHeight / 2
+    };
+}
+
+// Get input port position for a node based on its orientation
+function getInputPortPosition(node, element) {
+    if (node.orientation === 'vertical') {
+        // Vertical: input at top center
+        return {
+            x: node.x + element.offsetWidth / 2,
+            y: node.y
+        };
+    }
+    // Horizontal: input at left center
+    return {
+        x: node.x,
+        y: node.y + element.offsetHeight / 2
+    };
+}
+
+// Create edge path with proper exit/entry directions based on port orientation
+function createEdgePath(x1, y1, x2, y2, fromOrientation, toOrientation) {
+    // Determine direction based on node orientation
+    // Horizontal nodes: output exits right, input enters from left
+    // Vertical nodes: output exits down, input enters from top
+    const fromDir = fromOrientation === 'vertical' ? 'vertical' : 'horizontal';
+    const toDir = toOrientation === 'vertical' ? 'vertical' : 'horizontal';
+    return createSmoothPathMixed(x1, y1, x2, y2, fromDir, toDir);
+}
 
 // Draw all edges for current workflow
 export function drawEdges() {
@@ -25,10 +67,14 @@ export function drawEdges() {
         const fromEl = fromNode.element;
         const toEl = toNode.element;
 
-        const x1 = fromNode.data.x + fromEl.offsetWidth;
-        const y1 = fromNode.data.y + fromEl.offsetHeight / 2;
-        const x2 = toNode.data.x;
-        const y2 = toNode.data.y + toEl.offsetHeight / 2;
+        // Get port positions based on node orientation
+        const fromPos = getOutputPortPosition(fromNode.data, fromEl);
+        const toPos = getInputPortPosition(toNode.data, toEl);
+
+        const x1 = fromPos.x;
+        const y1 = fromPos.y;
+        const x2 = toPos.x;
+        const y2 = toPos.y;
 
         // Create edge group for path and handles
         const edgeGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -37,7 +83,7 @@ export function drawEdges() {
 
         // Create the main edge path
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        const d = createSmoothPath(x1, y1, x2, y2);
+        const d = createEdgePath(x1, y1, x2, y2, fromNode.data.orientation, toNode.data.orientation);
         path.setAttribute('d', d);
         path.setAttribute('class', 'edge animated');
 
@@ -186,14 +232,16 @@ function startEdgeReconnection(edge, edgeIndex, handleType) {
     state.tempConnectionLine.style.pointerEvents = 'none';
     svg.appendChild(state.tempConnectionLine);
 
-    // Get the fixed end position
+    // Get the fixed end position based on node orientation
     const fixedNodeId = handleType === 'source' ? edge.to : edge.from;
     const fixedNode = state.nodeElements[fixedNodeId];
     const fixedEl = fixedNode.element;
-    const fixedX = handleType === 'source'
-        ? fixedNode.data.x  // Target node's input (left side)
-        : fixedNode.data.x + fixedEl.offsetWidth;  // Source node's output (right side)
-    const fixedY = fixedNode.data.y + fixedEl.offsetHeight / 2;
+    const fixedPos = handleType === 'source'
+        ? getInputPortPosition(fixedNode.data, fixedEl)
+        : getOutputPortPosition(fixedNode.data, fixedEl);
+    const fixedX = fixedPos.x;
+    const fixedY = fixedPos.y;
+    const fixedDir = fixedNode.data.orientation === 'vertical' ? 'vertical' : 'horizontal';
 
     // Highlight compatible ports
     highlightPortsForReconnection(handleType);
@@ -209,9 +257,10 @@ function startEdgeReconnection(edge, edgeIndex, handleType) {
         const endX = (e.clientX - canvasRect.left - state.panX) / state.zoomLevel;
         const endY = (e.clientY - canvasRect.top - state.panY) / state.zoomLevel;
 
+        // Use horizontal for mouse cursor end, fixed node orientation for fixed end
         const d = handleType === 'source'
-            ? createSmoothPath(endX, endY, fixedX, fixedY)
-            : createSmoothPath(fixedX, fixedY, endX, endY);
+            ? createSmoothPathMixed(endX, endY, fixedX, fixedY, 'horizontal', fixedDir)
+            : createSmoothPathMixed(fixedX, fixedY, endX, endY, fixedDir, 'horizontal');
 
         state.tempConnectionLine.setAttribute('d', d);
     };

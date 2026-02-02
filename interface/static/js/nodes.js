@@ -130,12 +130,39 @@ export function deleteNode(nodeId) {
     drawEdges();
 }
 
+// Toggle node orientation between horizontal and vertical
+export function toggleNodeOrientation(nodeId) {
+    const nodeInfo = state.nodeElements[nodeId];
+    if (!nodeInfo) return;
+
+    const node = nodeInfo.data;
+    const nodeEl = nodeInfo.element;
+
+    // Toggle orientation
+    node.orientation = node.orientation === 'vertical' ? 'horizontal' : 'vertical';
+
+    // Update CSS class
+    nodeEl.classList.toggle('vertical', node.orientation === 'vertical');
+
+    // Update rotate button icon
+    const rotateBtn = nodeEl.querySelector('.node-rotate-btn i');
+    if (rotateBtn) {
+        rotateBtn.className = node.orientation === 'vertical'
+            ? 'fa-solid fa-arrows-left-right'
+            : 'fa-solid fa-arrows-up-down';
+    }
+
+    // Redraw edges to reflect new port positions
+    drawEdges();
+}
+
 // Render a single node
 export function renderNode(node) {
     const nodeEl = document.createElement('div');
     let nodeClass = 'node';
     if (node.type === 'composite') nodeClass += ' composite';
     if (node.type === 'device') nodeClass += ' device';
+    if (node.orientation === 'vertical') nodeClass += ' vertical';
     nodeEl.className = nodeClass;
     nodeEl.style.left = node.x + 'px';
     nodeEl.style.top = node.y + 'px';
@@ -149,7 +176,13 @@ export function renderNode(node) {
         ? `<span class="node-device-mode mode-${node.deviceMode}" title="${node.deviceMode}"></span>`
         : '';
 
+    // Rotation button icon based on current orientation
+    const rotateIcon = node.orientation === 'vertical'
+        ? 'fa-solid fa-arrows-left-right'
+        : 'fa-solid fa-arrows-up-down';
+
     nodeEl.innerHTML = `
+        <button class="node-rotate-btn" title="Toggle connector orientation"><i class="${rotateIcon}"></i></button>
         <div class="node-port node-port-input" data-port="input" data-node-id="${node.id}"></div>
         <div class="node-content">
             <i class="node-icon ${iconClass}"></i>
@@ -160,6 +193,13 @@ export function renderNode(node) {
         <div class="node-port node-port-output" data-port="output" data-node-id="${node.id}"></div>
         <button class="node-delete-btn" title="Delete node"><i class="fa-solid fa-xmark"></i></button>
     `;
+
+    // Rotate button handler
+    const rotateBtn = nodeEl.querySelector('.node-rotate-btn');
+    rotateBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleNodeOrientation(node.id);
+    });
 
     // Delete button handler
     const deleteBtn = nodeEl.querySelector('.node-delete-btn');

@@ -1,23 +1,47 @@
 // Connection creation between nodes
 import { state } from './state.js';
-import { createSmoothPath } from './utils.js';
+import { createSmoothPathMixed } from './utils.js';
 import { addEdge, highlightValidPorts, clearPortHighlights } from './edges.js';
 
-// Get the position of a port relative to viewport (for temp connection line)
+// Get the position and direction of a port based on node orientation
 export function getPortPosition(nodeId, portType) {
     const nodeInfo = state.nodeElements[nodeId];
-    if (!nodeInfo) return { x: 0, y: 0 };
+    if (!nodeInfo) return { x: 0, y: 0, dir: 'horizontal' };
 
     const node = nodeInfo.data;
     const nodeEl = nodeInfo.element;
-
-    // Use node data coordinates (viewport space)
-    const y = node.y + nodeEl.offsetHeight / 2;
+    const isVertical = node.orientation === 'vertical';
 
     if (portType === 'output') {
-        return { x: node.x + nodeEl.offsetWidth, y };
+        if (isVertical) {
+            // Bottom center
+            return {
+                x: node.x + nodeEl.offsetWidth / 2,
+                y: node.y + nodeEl.offsetHeight,
+                dir: 'vertical'
+            };
+        }
+        // Right center
+        return {
+            x: node.x + nodeEl.offsetWidth,
+            y: node.y + nodeEl.offsetHeight / 2,
+            dir: 'horizontal'
+        };
     } else {
-        return { x: node.x, y };
+        if (isVertical) {
+            // Top center
+            return {
+                x: node.x + nodeEl.offsetWidth / 2,
+                y: node.y,
+                dir: 'vertical'
+            };
+        }
+        // Left center
+        return {
+            x: node.x,
+            y: node.y + nodeEl.offsetHeight / 2,
+            dir: 'horizontal'
+        };
     }
 }
 
@@ -50,10 +74,11 @@ export function startConnection(nodeId, portType, event) {
         const endX = (e.clientX - canvasRect.left - state.panX) / state.zoomLevel;
         const endY = (e.clientY - canvasRect.top - state.panY) / state.zoomLevel;
 
-        // Use smooth curve for temp line too
+        // Use smooth curve with proper exit/entry directions
+        // Mouse cursor uses horizontal direction, source port uses its orientation
         const d = portType === 'output'
-            ? createSmoothPath(startPos.x, startPos.y, endX, endY)
-            : createSmoothPath(endX, endY, startPos.x, startPos.y);
+            ? createSmoothPathMixed(startPos.x, startPos.y, endX, endY, startPos.dir, 'horizontal')
+            : createSmoothPathMixed(endX, endY, startPos.x, startPos.y, 'horizontal', startPos.dir);
         state.tempConnectionLine.setAttribute('d', d);
 
         // Highlight valid drop targets
