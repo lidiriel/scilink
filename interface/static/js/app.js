@@ -8,7 +8,7 @@ import { initPiecesSearch, loadPieceDirectories } from './pieces.js';
 import { initWorkflowsSearch, loadWorkflowsPanel, setLoadWorkflow } from './workflows-panel.js';
 import { createTabbedPanel } from './tabbed-panel.js';
 import { initNavigation, navigateToPage, setLoadSettings, setLoadExperiments, setLoadDevices } from './navigation.js';
-import { initSettings, loadSettings, editPlatform, deletePlatform } from './settings.js';
+import { initSettings, loadSettings, editPlatform, deletePlatform, togglePlatform, addBusToPlatform } from './settings.js';
 import { initDevices, loadDevices, editDevice, deleteDevice, loadSidebarDevices } from './devices.js';
 import { initBuses, loadBuses, editBus, deleteBus, openBusModal } from './buses.js';
 import {
@@ -323,6 +323,8 @@ setLoadDevices(loadDevices);
 window.appFunctions = {
     editPlatform,
     deletePlatform,
+    togglePlatform,
+    addBusToPlatform,
     editExperiment,
     deleteExperiment,
     selectExperiment,

@@ -781,72 +781,248 @@
     color: #2563eb;
 }
 
-/* ============== Settings Page Tabs ============== */
-.settings-tabs-container {
+/* ============== Expandable Platform Cards ============== */
+.platforms-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
     max-width: 800px;
 }
 
-.settings-tabs {
-    display: flex;
-    gap: 0.25rem;
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid #e5e7eb;
+.platform-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
-.settings-tab {
+.platform-card-header {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    background: none;
-    border: none;
-    border-bottom: 2px solid transparent;
-    color: #6b7280;
-    font-size: 0.875rem;
-    font-weight: 500;
+    padding: 1rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.15s;
 }
 
-.settings-tab:hover {
-    color: #374151;
+.platform-card-header:hover {
     background: #f9fafb;
 }
 
-.settings-tab.active {
-    color: #2563eb;
-    border-bottom-color: #2563eb;
+.platform-card-expand {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    transition: transform 0.2s;
+    flex-shrink: 0;
 }
 
-.settings-tab.hidden {
+.platform-card.expanded .platform-card-expand {
+    transform: rotate(90deg);
+}
+
+.platform-card-info {
+    flex: 1;
+    min-width: 0;
+    margin-left: 0.5rem;
+}
+
+.platform-card-name {
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.platform-card-host {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0.25rem 0 0 0;
+}
+
+.platform-card-desc {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    margin: 0.25rem 0 0 0;
+}
+
+.platform-card-stats {
+    font-size: 0.6875rem;
+    color: #9ca3af;
+    margin: 0.25rem 0 0 0;
+}
+
+.platform-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: 1rem;
+}
+
+.platform-card-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #6b7280;
+    transition: all 0.15s;
+}
+
+.platform-card-btn:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.platform-card-btn.delete:hover {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #ef4444;
+}
+
+/* Platform Buses Section */
+.platform-buses {
     display: none;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    padding: 1rem;
 }
 
-.settings-tab-content {
-    display: none;
-}
-
-.settings-tab-content.active {
+.platform-card.expanded .platform-buses {
     display: block;
 }
 
-/* Bus item with connection type badge */
-.settings-item-badge {
+.platform-buses-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.platform-buses-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.platform-add-bus-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: white;
+    border: 1px dashed #d1d5db;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.platform-add-bus-btn:hover {
+    border-color: #2563eb;
+    color: #2563eb;
+    background: #eff6ff;
+}
+
+.platform-buses-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.platform-buses-empty {
+    text-align: center;
+    padding: 1rem;
+    color: #9ca3af;
+    font-size: 0.8125rem;
+}
+
+/* Bus Item (nested inside platform) */
+.bus-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+}
+
+.bus-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.bus-item-name {
+    font-weight: 500;
+    color: #1f2937;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bus-item-badge {
     display: inline-block;
     padding: 0.125rem 0.5rem;
     background: #e0e7ff;
     color: #3730a3;
-    font-size: 0.6875rem;
+    font-size: 0.625rem;
     font-weight: 600;
     border-radius: 9999px;
-    margin-left: 0.5rem;
 }
 
-/* Connected devices count */
-.settings-item-devices {
+.bus-item-settings {
     font-size: 0.75rem;
     color: #6b7280;
-    margin-top: 0.25rem;
+    margin: 0.25rem 0 0 0;
+}
+
+.bus-item-devices {
+    font-size: 0.6875rem;
+    color: #9ca3af;
+    margin: 0.25rem 0 0 0;
+}
+
+.bus-item-actions {
+    display: flex;
+    gap: 0.375rem;
+    margin-left: 0.75rem;
+}
+
+.bus-item-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #9ca3af;
+    font-size: 0.75rem;
+    transition: all 0.15s;
+}
+
+.bus-item-btn:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.bus-item-btn.delete:hover {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #ef4444;
 }
 
 /* Bus display on device cards */
@@ -882,4 +1058,68 @@
 
 .form-section-title i {
     color: #2563eb;
+}
+
+/* ============== Collapsible Form Section ============== */
+.form-collapsible {
+    margin-top: 0.5rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.form-collapsible .form-section-divider {
+    display: none;
+}
+
+.form-collapsible-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    transition: all 0.15s;
+}
+
+.form-collapsible.collapsed .form-collapsible-header {
+    border-bottom: none;
+}
+
+.form-collapsible-header:hover {
+    background: #e2e8f0;
+}
+
+.form-collapsible-header i {
+    color: #6b7280;
+}
+
+.form-collapsible-header i.fa-link {
+    color: #2563eb;
+}
+
+.form-collapsible-icon {
+    transition: transform 0.2s;
+    font-size: 0.75rem;
+}
+
+.form-collapsible:not(.collapsed) .form-collapsible-icon {
+    transform: rotate(90deg);
+}
+
+.form-collapsible-content {
+    padding: 1rem;
+}
+
+.form-collapsible-content .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-collapsible.collapsed .form-collapsible-content {
+    display: none;
 }

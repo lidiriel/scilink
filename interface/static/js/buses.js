@@ -1,5 +1,6 @@
 // Bus Connection management
 import { escapeHtml } from './utils.js';
+import { loadSettings } from './settings.js';
 
 // Local state
 let busesData = [];
@@ -7,7 +8,6 @@ let connectionsDefinitions = [];
 
 // Initialize buses module
 export function initBuses() {
-    const addBtn = document.getElementById('add-bus-btn');
     const modal = document.getElementById('bus-modal');
     const form = document.getElementById('bus-form');
     const closeBtn = document.getElementById('bus-modal-close');
@@ -17,11 +17,6 @@ export function initBuses() {
     if (!modal) return;
 
     const backdrop = modal.querySelector('.modal-backdrop');
-
-    // Open modal for new bus
-    if (addBtn) {
-        addBtn.addEventListener('click', () => openBusModal());
-    }
 
     // Close modal
     if (closeBtn) closeBtn.addEventListener('click', closeBusModal);
@@ -42,36 +37,13 @@ export function initBuses() {
             generateBusSettingsFields(e.target.value);
         });
     }
-
-    // Initialize settings tabs
-    initSettingsTabs();
-}
-
-function initSettingsTabs() {
-    const tabs = document.querySelectorAll('.settings-tab');
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const tabId = tab.dataset.tab;
-            switchSettingsTab(tabId);
-        });
-    });
-}
-
-function switchSettingsTab(tabId) {
-    // Update tab buttons
-    document.querySelectorAll('.settings-tab').forEach(t => {
-        t.classList.toggle('active', t.dataset.tab === tabId);
-    });
-
-    // Update tab content
-    document.querySelectorAll('.settings-tab-content').forEach(content => {
-        const contentTabId = content.id.replace('settings-tab-', '');
-        content.classList.toggle('active', contentTabId === tabId);
-    });
 }
 
 // Load connections definitions
 export async function loadConnectionsDefinitions() {
+    if (connectionsDefinitions.length > 0) {
+        return connectionsDefinitions; // Already loaded
+    }
     try {
         const response = await fetch('/api/connections');
         connectionsDefinitions = await response.json();
@@ -94,86 +66,19 @@ export async function loadBuses() {
     try {
         const response = await fetch('/api/settings?category=bus');
         busesData = await response.json();
-        renderBusesList();
-        updateBusTabVisibility();
     } catch (error) {
         console.error('Error loading buses:', error);
+        busesData = [];
     }
 }
 
-function updateBusTabVisibility() {
-    const busTab = document.getElementById('buses-tab');
-    if (busTab) {
-        if (busesData.length > 0) {
-            busTab.classList.remove('hidden');
-        } else {
-            busTab.classList.add('hidden');
-        }
-    }
-}
-
-export function showBusTab() {
-    const busTab = document.getElementById('buses-tab');
-    if (busTab) {
-        busTab.classList.remove('hidden');
-    }
-}
-
-async function renderBusesList() {
-    const list = document.getElementById('buses-list');
-    if (!list) return;
-
-    if (busesData.length === 0) {
-        list.innerHTML = '<div class="settings-empty">No buses configured yet.</div>';
-        return;
-    }
-
-    // Fetch connected devices count for each bus
-    const busesWithDevices = await Promise.all(busesData.map(async (bus) => {
-        try {
-            const response = await fetch(`/api/buses/${bus.id}/devices`);
-            const devices = await response.json();
-            return { ...bus, deviceCount: Array.isArray(devices) ? devices.length : 0 };
-        } catch {
-            return { ...bus, deviceCount: 0 };
-        }
-    }));
-
-    list.innerHTML = busesWithDevices.map(bus => `
-        <div class="settings-item" data-id="${bus.id}">
-            <div class="settings-item-info">
-                <p class="settings-item-name">
-                    ${escapeHtml(bus.name)}
-                    <span class="settings-item-badge">${escapeHtml(bus.data?.connection_type || 'Unknown')}</span>
-                </p>
-                ${bus.description ? `<p class="settings-item-desc">${escapeHtml(bus.description)}</p>` : ''}
-                <p class="settings-item-host">${formatBusSettings(bus.data)}</p>
-                ${bus.deviceCount > 0 ? `<p class="settings-item-devices">${bus.deviceCount} device(s) connected</p>` : ''}
-            </div>
-            <div class="settings-item-actions">
-                <button class="settings-item-btn edit" title="Edit" onclick="window.appFunctions.editBus(${bus.id})">
-                    <i class="fa-solid fa-pen"></i>
-                </button>
-                <button class="settings-item-btn delete" title="Delete" onclick="window.appFunctions.deleteBus(${bus.id})">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            </div>
-        </div>
-    `).join('');
-}
-
-function formatBusSettings(data) {
-    if (!data) return '';
-    const parts = [];
-    if (data.port) parts.push(data.port);
-    if (data.baud_rate) parts.push(`${data.baud_rate} baud`);
-    return parts.join(' | ') || 'No settings';
-}
-
-export async function openBusModal(bus = null, preselectedType = null) {
+// Open bus modal with optional platform context
+export async function openBusModal(bus = null, preselectedType = null, platformId = null) {
     const modal = document.getElementById('bus-modal');
     const title = document.getElementById('bus-modal-title');
     const idInput = document.getElementById('bus-id');
+    const platformGroup = document.getElementById('bus-platform-group');
+    const platformSelect = document.getElementById('bus-platform-select');
     const nameInput = document.getElementById('bus-name');
     const typeSelect = document.getElementById('bus-type-select');
 
@@ -190,18 +95,52 @@ export async function openBusModal(bus = null, preselectedType = null) {
         `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`
     ).join('');
 
+    // Load platforms for dropdown
+    let platforms = [];
+    try {
+        const response = await fetch('/api/settings?category=platform');
+        platforms = await response.json();
+    } catch (error) {
+        console.error('Error loading platforms:', error);
+    }
+
+    // Populate platform dropdown
+    platformSelect.innerHTML = platforms.length > 0
+        ? platforms.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('')
+        : '<option value="">No platforms available</option>';
+
     if (bus) {
+        // Edit existing bus
         title.textContent = 'Edit Bus';
         idInput.value = bus.id;
+        platformSelect.value = bus.data?.platform_id || '';
+        platformSelect.disabled = true; // Cannot change platform when editing
+        platformGroup.style.display = 'block';
         nameInput.value = bus.name;
         typeSelect.value = bus.data?.connection_type || busTypes[0]?.name || '';
         typeSelect.disabled = true; // Cannot change connection type when editing
         generateBusSettingsFields(typeSelect.value, bus.data);
     } else {
+        // Create new bus
         title.textContent = 'Add Bus';
         idInput.value = '';
         nameInput.value = '';
         typeSelect.disabled = preselectedType ? true : false; // Lock if coming from device modal
+
+        if (platformId) {
+            // Platform is pre-selected (from platform card "Add Bus" button)
+            platformSelect.value = platformId;
+            platformSelect.disabled = true;
+            platformGroup.style.display = 'block';
+        } else {
+            // No platform context - show dropdown for user to select
+            platformSelect.disabled = false;
+            platformGroup.style.display = 'block';
+            if (platforms.length > 0) {
+                platformSelect.value = platforms[0].id;
+            }
+        }
+
         // Use preselected type if provided, otherwise use first available
         const selectedType = preselectedType || busTypes[0]?.name || '';
         if (selectedType) {
@@ -265,12 +204,14 @@ export function closeBusModal() {
 
 async function saveBus() {
     const idInput = document.getElementById('bus-id');
+    const platformSelect = document.getElementById('bus-platform-select');
     const nameInput = document.getElementById('bus-name');
     const typeSelect = document.getElementById('bus-type-select');
     const settingsContainer = document.getElementById('bus-settings-fields');
 
     const name = nameInput.value.trim();
     const connectionType = typeSelect.value;
+    const platformId = platformSelect.value ? parseInt(platformSelect.value, 10) : null;
 
     if (!name) {
         alert('Bus name is required');
@@ -278,8 +219,16 @@ async function saveBus() {
         return;
     }
 
+    if (!platformId) {
+        alert('Bus must belong to a platform');
+        return;
+    }
+
     // Gather bus settings from dynamic fields
-    const busSettingsData = { connection_type: connectionType };
+    const busSettingsData = {
+        connection_type: connectionType,
+        platform_id: platformId
+    };
     settingsContainer.querySelectorAll('input, select').forEach(input => {
         const key = input.name;
         let value = input.value;
@@ -314,8 +263,8 @@ async function saveBus() {
 
         if (response.ok) {
             closeBusModal();
-            loadBuses();
-            showBusTab(); // Ensure tab is visible after creating first bus
+            // Reload settings to refresh the platforms/buses display
+            loadSettings();
         } else {
             const error = await response.json();
             alert(error.error || 'Failed to save bus');
@@ -326,7 +275,9 @@ async function saveBus() {
     }
 }
 
-export function editBus(id) {
+export async function editBus(id) {
+    // Fetch the bus data from the list or API
+    await loadBuses();
     const bus = busesData.find(b => b.id === id);
     if (bus) {
         openBusModal(bus);
@@ -334,6 +285,7 @@ export function editBus(id) {
 }
 
 export async function deleteBus(id) {
+    await loadBuses();
     const bus = busesData.find(b => b.id === id);
     if (!bus) return;
 
@@ -347,7 +299,8 @@ export async function deleteBus(id) {
         });
 
         if (response.ok) {
-            loadBuses();
+            // Reload settings to refresh the platforms/buses display
+            loadSettings();
         } else {
             const error = await response.json();
             alert(error.error || 'Failed to delete bus');
@@ -365,6 +318,11 @@ export function getConnectionDefinition(connectionName) {
 
 export function getBusesByType(connectionType) {
     return busesData.filter(b => b.data?.connection_type === connectionType);
+}
+
+// Deprecated - kept for backwards compatibility
+export function showBusTab() {
+    // No longer needed with hierarchical view
 }
 
 export { busesData, connectionsDefinitions };

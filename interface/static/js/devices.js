@@ -54,6 +54,20 @@ export function initDevices() {
 
     // Bus selection handler
     initBusSelection();
+
+    // Connection settings toggle (collapsible)
+    initConnectionToggle();
+}
+
+function initConnectionToggle() {
+    const toggle = document.getElementById('device-connection-toggle');
+    const section = document.getElementById('device-connection-section');
+
+    if (toggle && section) {
+        toggle.addEventListener('click', () => {
+            section.classList.toggle('collapsed');
+        });
+    }
 }
 
 function initBusSelection() {
@@ -251,7 +265,7 @@ async function openDeviceModal(device = null, piece = null) {
         const connectionName = device.data?.connection_type;
         if (connectionName) {
             connectionTypeInput.value = connectionName;
-            setupConnectionSection(connectionName, device.data);
+            await setupConnectionSection(connectionName, device.data);
         } else {
             hideConnectionSection();
         }
@@ -274,7 +288,7 @@ async function openDeviceModal(device = null, piece = null) {
         const connectionName = deviceSettings?.connection;
         if (connectionName) {
             connectionTypeInput.value = connectionName;
-            setupConnectionSection(connectionName, {});
+            await setupConnectionSection(connectionName, {});
         } else {
             hideConnectionSection();
         }
@@ -294,7 +308,7 @@ function hideConnectionSection() {
     if (connectionFields) connectionFields.innerHTML = '';
 }
 
-function setupConnectionSection(connectionName, existingData = {}) {
+async function setupConnectionSection(connectionName, existingData = {}) {
     const connectionSection = document.getElementById('device-connection-section');
     const busGroup = document.getElementById('device-bus-group');
     const connectionFields = document.getElementById('device-connection-fields');
@@ -309,16 +323,30 @@ function setupConnectionSection(connectionName, existingData = {}) {
     }
 
     connectionSection.classList.remove('hidden');
+    connectionSection.classList.add('collapsed'); // Start collapsed by default
 
     if (connDef.bus_settings) {
         // This connection type uses buses
         busGroup.classList.remove('hidden');
 
-        // Populate bus dropdown
+        // Load platforms to show with bus names
+        let platforms = {};
+        try {
+            const response = await fetch('/api/settings?category=platform');
+            const platformsList = await response.json();
+            platformsList.forEach(p => { platforms[p.id] = p.name; });
+        } catch (error) {
+            console.error('Error loading platforms:', error);
+        }
+
+        // Populate bus dropdown with platform info
         const buses = getBusesByType(connectionName);
         busSelect.innerHTML = `
             <option value="">-- Select a bus --</option>
-            ${buses.map(b => `<option value="${escapeHtml(b.name)}">${escapeHtml(b.name)}</option>`).join('')}
+            ${buses.map(b => {
+                const platformName = platforms[b.data?.platform_id] || 'Unknown';
+                return `<option value="${escapeHtml(b.name)}">${escapeHtml(b.name)} (${escapeHtml(platformName)})</option>`;
+            }).join('')}
             <option value="__new__">+ Create new bus...</option>
         `;
 

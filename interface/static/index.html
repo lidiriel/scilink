@@ -315,26 +315,31 @@
                                         <textarea id="device-description" rows="2" placeholder="Optional description..."></textarea>
                                     </div>
 
-                                    <!-- Dynamic Connection Section -->
-                                    <div id="device-connection-section" class="hidden">
+                                    <!-- Dynamic Connection Section (Collapsible) -->
+                                    <div id="device-connection-section" class="form-collapsible hidden collapsed">
                                         <div class="form-section-divider"></div>
-                                        <h4 class="form-section-title">
-                                            <i class="fa-solid fa-link"></i> Connection Settings
-                                        </h4>
-
-                                        <!-- Bus Selection (for bus-based connections) -->
-                                        <div id="device-bus-group" class="form-group hidden">
-                                            <label for="device-bus-select">Bus <span class="required">*</span></label>
-                                            <select id="device-bus-select">
-                                                <option value="">-- Select a bus --</option>
-                                                <option value="__new__">+ Create new bus...</option>
-                                            </select>
+                                        <div class="form-collapsible-header" id="device-connection-toggle">
+                                            <i class="fa-solid fa-chevron-right form-collapsible-icon"></i>
+                                            <i class="fa-solid fa-link"></i>
+                                            <span>Connection Settings</span>
                                         </div>
+                                    
+                                            <div class="form-collapsible-content">
+                                                <!-- Bus Selection (for bus-based connections) -->
+                                                <div id="device-bus-group" class="form-group hidden">
+                                                    <label for="device-bus-select">Bus <span class="required">*</span></label>
+                                                    <select id="device-bus-select">
+                                                        <option value="">-- Select a bus --</option>
+                                                        <option value="__new__">+ Create new bus...</option>
+                                                    </select>
+                                                </div>
 
-                                        <!-- Device-specific connection settings -->
-                                        <div id="device-connection-fields">
-                                            <!-- Generated dynamically -->
-                                        </div>
+                                                <!-- Device-specific connection settings -->
+                                                <div id="device-connection-fields">
+                                                    <!-- Generated dynamically -->
+                                                </div>
+                                            </div>
+                                        
                                     </div>
 
                                     <!-- Legacy connection string (hidden, for backwards compatibility) -->
@@ -379,50 +384,19 @@
                         <h1>Settings</h1>
                     </div>
                     <div class="page-body">
-                        <!-- Settings Tabs -->
-                        <div class="settings-tabs-container">
-                            <div class="settings-tabs">
-                                <button class="settings-tab active" data-tab="platforms">
-                                    <i class="fa-solid fa-server"></i>
-                                    <span>Platforms</span>
-                                </button>
-                                <button class="settings-tab hidden" data-tab="buses" id="buses-tab">
-                                    <i class="fa-solid fa-link"></i>
-                                    <span>Bus Connections</span>
-                                </button>
+                        <div class="settings-section">
+                            <h2 class="settings-section-title">
+                                <i class="fa-solid fa-server"></i>
+                                Platforms
+                            </h2>
+                            <p class="settings-section-desc">Configure execution platforms and their bus connections for your workflows.</p>
+                            <div id="platforms-list" class="platforms-list">
+                                <!-- Platforms with nested buses will be loaded here -->
                             </div>
-
-                            <!-- Tab: Platforms -->
-                            <div id="settings-tab-platforms" class="settings-tab-content active">
-                                <div class="settings-section">
-                                    <h2 class="settings-section-title">
-                                        <i class="fa-solid fa-server"></i>
-                                        Platforms
-                                    </h2>
-                                    <p class="settings-section-desc">Configure execution platform for your workflows.</p>
-                                    <div id="platforms-list" class="settings-list"></div>
-                                    <button id="add-platform-btn" class="settings-add-btn">
-                                        <i class="fa-solid fa-plus"></i>
-                                        Add Platform
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Tab: Bus Connections -->
-                            <div id="settings-tab-buses" class="settings-tab-content">
-                                <div class="settings-section">
-                                    <h2 class="settings-section-title">
-                                        <i class="fa-solid fa-link"></i>
-                                        Bus Connections
-                                    </h2>
-                                    <p class="settings-section-desc">Manage communication buses for device connections.</p>
-                                    <div id="buses-list" class="settings-list"></div>
-                                    <button id="add-bus-btn" class="settings-add-btn">
-                                        <i class="fa-solid fa-plus"></i>
-                                        Add Bus
-                                    </button>
-                                </div>
-                            </div>
+                            <button id="add-platform-btn" class="settings-add-btn">
+                                <i class="fa-solid fa-plus"></i>
+                                Add Platform
+                            </button>
                         </div>
 
                         <!-- Platform Form Modal -->
@@ -479,6 +453,12 @@
             <form id="bus-form" class="modal-form">
                 <input type="hidden" id="bus-id">
                 <input type="hidden" id="bus-connection-type">
+                <div class="form-group" id="bus-platform-group">
+                    <label for="bus-platform-select">Platform <span class="required">*</span></label>
+                    <select id="bus-platform-select" required>
+                        <!-- Options populated dynamically -->
+                    </select>
+                </div>
                 <div class="form-group">
                     <label for="bus-name">Name <span class="required">*</span></label>
                     <input type="text" id="bus-name" required placeholder="e.g., MODBUS-Main">
