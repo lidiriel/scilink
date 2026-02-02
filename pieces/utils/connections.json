@@ -73,5 +73,22 @@
             "default": 1
         }
     }
+},
+{
+    "name": "USB",
+    "description": "Universal Serial Bus (USB) communication protocol for devices.",
+    "version": "1.0.0",
+    "device_settings": {
+        "vendor_id": {
+            "type": "string",
+            "description": "The USB vendor ID of the device.",
+            "default": ""
+        },
+        "product_id": {
+            "type": "string",
+            "description": "The USB product ID of the device.",
+            "default": ""
+        }
+    }
 }
 ]
