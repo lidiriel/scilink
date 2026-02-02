@@ -1,0 +1,42 @@
+<!-- Bus Form Modal (global, accessible from any page) -->
+<div id="bus-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="bus-modal-title">Add Bus</h3>
+            <button class="modal-close" id="bus-modal-close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form id="bus-form" class="modal-form">
+            <input type="hidden" id="bus-id">
+            <input type="hidden" id="bus-connection-type">
+            <div class="form-group" id="bus-platform-group">
+                <label for="bus-platform-select">Platform <span class="required">*</span></label>
+                <select id="bus-platform-select" required>
+                    <!-- Options populated dynamically -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="bus-name">Name <span class="required">*</span></label>
+                <input type="text" id="bus-name" required placeholder="e.g., MODBUS-Main">
+            </div>
+            <div class="form-group">
+                <label for="bus-type-select">Connection Type <span class="required">*</span></label>
+                <select id="bus-type-select" required>
+                    <!-- Options populated dynamically -->
+                </select>
+            </div>
+            <div id="bus-settings-fields">
+                <!-- Dynamic fields based on connection type -->
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" id="bus-cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-save"></i>
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

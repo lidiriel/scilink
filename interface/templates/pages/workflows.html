@@ -1,0 +1,119 @@
+<!-- Page: Workflows -->
+<div id="page-workflows" class="page-content active">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>Hierarchical Workflow Designer</h1>
+        <!-- Breadcrumb Navigation -->
+        <div id="breadcrumbs" class="breadcrumbs">
+            <!-- Breadcrumbs will be inserted here -->
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div id="instructions-box" class="instructions-box">
+        <p style="font-weight: 600; color: #1e3a8a; margin: 0 0 0.25rem 0;">Instructions:</p>
+        <p style="color: #1e40af; margin: 0;">
+            &bull; <strong>Double-click</strong> the purple "Process B" node to drill down into its sub-workflow
+            &bull; Use the <strong>breadcrumb navigation</strong> above to return to parent workflows
+            &bull; <strong>Drag nodes</strong> to reposition them
+        </p>
+    </div>
+
+    <!-- Workflow Area -->
+    <div class="workflow-area">
+        <!-- Workflow Canvas -->
+        <div id="canvas" style="flex: 1; position: relative; background: #f9fafb; overflow: hidden;">
+            <!-- Top Toolbar -->
+            <div id="canvas-toolbar" class="canvas-toolbar">
+                <button id="save-workflow" class="toolbar-btn" title="Save workflow">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span>Save</span>
+                </button>
+            </div>
+            <div id="canvas-viewport">
+                <svg id="edges">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="#b1b1b7" />
+                        </marker>
+                    </defs>
+                </svg>
+                <div id="nodes"></div>
+            </div>
+            <!-- Zoom Toolbar -->
+            <div id="zoom-toolbar" class="zoom-toolbar">
+                <button id="zoom-in" class="zoom-btn" title="Zoom in">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+                <span id="zoom-level" class="zoom-level">100%</span>
+                <button id="zoom-out" class="zoom-btn" title="Zoom out">
+                    <i class="fa-solid fa-minus"></i>
+                </button>
+                <div class="zoom-separator"></div>
+                <button id="zoom-fit" class="zoom-btn" title="Fit to view">
+                    <i class="fa-solid fa-expand"></i>
+                </button>
+                <button id="auto-layout" class="zoom-btn" title="Auto-arrange nodes">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Sidebar with Tabs -->
+        <aside id="right-sidebar" class="side-panel tabbed-panel">
+            <div class="side-panel-header">
+                <div class="side-panel-tabs">
+                    <button class="side-panel-tab active" data-tab="pieces" title="Blocks">
+                        <i class="fa-solid fa-cube"></i>
+                        <span>Blocks</span>
+                    </button>
+                    <button class="side-panel-tab" data-tab="workflows" title="Workflows">
+                        <i class="fa-solid fa-diagram-project"></i>
+                        <span>Workflows</span>
+                    </button>
+                    <button class="side-panel-tab" data-tab="installed-devices" title="Installed Devices">
+                        <i class="fa-solid fa-microchip"></i>
+                        <span>Devices</span>
+                    </button>
+                </div>
+                <button id="sidebar-toggle" class="side-panel-toggle" title="Toggle panel">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <!-- Tab: Blocks -->
+            <div id="tab-pieces" class="side-panel-content side-panel-tab-content active">
+                <div class="side-panel-search">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="pieces-search" placeholder="Search blocks...">
+                </div>
+                <div class="pieces-directory-select">
+                    <select id="pieces-directory">
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+                <div id="pieces-list" class="pieces-list">
+                    <!-- Pieces will be listed here -->
+                </div>
+            </div>
+
+            <!-- Tab: Workflows -->
+            <div id="tab-workflows" class="side-panel-content side-panel-tab-content">
+                <div class="side-panel-search">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="workflows-search" placeholder="Search workflow...">
+                </div>
+                <div id="workflows-list" class="side-panel-list">
+                    <!-- Workflows will be listed here -->
+                </div>
+            </div>
+
+            <!-- Tab: Installed Devices -->
+            <div id="tab-installed-devices" class="side-panel-content side-panel-tab-content">
+                <div id="sidebar-devices-list" class="side-panel-list">
+                    <!-- Installed devices will be listed here -->
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>

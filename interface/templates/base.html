@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hierarchical Workflow Designer</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='toggle-group.css') }}">
+</head>
+<body>
+    <div id="root">
+        <div class="app-container">
+            {% include 'components/sidebar.html' %}
+
+            <!-- Main Content -->
+            <main class="main-content">
+                {% include 'pages/workflows.html' %}
+                {% include 'pages/experiments.html' %}
+                {% include 'pages/monitor.html' %}
+                {% include 'pages/devices.html' %}
+                {% include 'pages/settings.html' %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Global Modals (accessible from any page) -->
+    {% include 'modals/bus.html' %}
+
+    <!-- Application Script (ES6 Module) -->
+    <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

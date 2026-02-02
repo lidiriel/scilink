@@ -1,0 +1,47 @@
+<!-- Page: Devices -->
+<div id="page-devices" class="page-content">
+    <div class="page-header">
+        <h1>Devices</h1>
+    </div>
+    <div class="page-body devices-page-layout">
+        <!-- Device Pieces Panel (Left) -->
+        <div class="device-pieces-panel">
+            <div class="panel-header">
+                <h3><i class="fa-solid fa-puzzle-piece"></i> Available Devices</h3>
+            </div>
+            <div class="panel-search">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" id="device-pieces-search" placeholder="Search devices...">
+            </div>
+            <div class="panel-directory-select">
+                <select id="device-pieces-directory">
+                    <!-- Options will be populated dynamically -->
+                </select>
+            </div>
+            <div id="device-pieces-list" class="panel-list">
+                <!-- Device pieces will be listed here -->
+            </div>
+        </div>
+
+        <!-- Installed Devices Section (Right) -->
+        <div class="installed-devices-section">
+            <div class="section-header">
+                <h2><i class="fa-solid fa-microchip"></i> Installed Devices</h2>
+                <p>Drag devices from the left panel to install them. Each device can be installed multiple times.</p>
+            </div>
+
+            <!-- Drop Zone for Devices -->
+            <div id="devices-drop-zone" class="devices-drop-zone">
+                <div id="devices-list" class="devices-grid">
+                    <!-- Installed devices will be loaded here -->
+                </div>
+                <div class="drop-hint">
+                    <i class="fa-solid fa-arrow-down"></i>
+                    <span>Drop device here to install</span>
+                </div>
+            </div>
+        </div>
+
+        {% include 'modals/device.html' %}
+    </div>
+</div>

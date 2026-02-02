@@ -1,7 +1,7 @@
 """
 Flask backend for Hierarchical Workflow Designer with PostgreSQL support
 """
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, render_template
 from flask_cors import CORS
 from config import config
 from models import db, Experiment, Workflow, Node, Edge, Setting, DeviceInstalled, BlockUsed
@@ -12,7 +12,7 @@ import glob
 import subprocess
 
 # Initialize Flask app
-app = Flask(__name__, static_folder='static')
+app = Flask(__name__, static_folder='static', template_folder='templates')
 CORS(app)
 
 # Load configuration
@@ -26,7 +26,7 @@ db.init_app(app)
 @app.route('/')
 def index():
     """Serve the main HTML page"""
-    return send_from_directory('static', 'index.html')
+    return render_template('base.html')
 
 
 @app.route('/<path:path>')

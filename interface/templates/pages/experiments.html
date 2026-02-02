@@ -1,0 +1,29 @@
+<!-- Page: Experiments -->
+<div id="page-experiments" class="page-content">
+    <div class="page-header">
+        <h1>Experiments</h1>
+    </div>
+    <div class="page-body">
+        <!-- Experiments Section -->
+        <div class="settings-section">
+            <h2 class="settings-section-title">
+                <i class="fa-solid fa-flask"></i>
+                My Experiments
+            </h2>
+            <p class="settings-section-desc">Create and manage your experiments. Each experiment can contain multiple workflows.</p>
+
+            <!-- Experiments List -->
+            <div id="experiments-list" class="settings-list">
+                <!-- Experiments will be loaded here -->
+            </div>
+
+            <!-- Add Experiment Button -->
+            <button id="add-experiment-btn" class="settings-add-btn">
+                <i class="fa-solid fa-plus"></i>
+                New Experiment
+            </button>
+        </div>
+
+        {% include 'modals/experiment.html' %}
+    </div>
+</div>
