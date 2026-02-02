@@ -1,0 +1,77 @@
+[
+{
+    "name": "MODBUS-RTU",
+    "description": "Modbus RTU protocol for serial communication with devices.",
+    "version": "1.0.0",
+    "bus_settings": {
+        "port": {
+            "type": "string",
+            "description": "The serial port to which the device is connected.",
+            "default": "/dev/ttyUSB0"
+        },
+        "baud_rate": {
+            "type": "integer",
+            "description": "The baud rate for serial communication.",
+            "default": 9600
+        },
+        "data_bits": {
+            "type": "integer",
+            "description": "The number of data bits in each character.",
+            "default": 8
+        },
+        "parity": {
+            "type": "string",
+            "description": "The parity bit setting.",
+            "enum": ["none", "even", "odd"],
+            "default": "none"
+        },
+        "stop_bits": {
+            "type": "integer",
+            "description": "The number of stop bits to use.",
+            "default": 1
+        }
+    },
+    "device_settings": {
+        "slave_id": {
+            "type": "integer",
+            "description": "The Modbus slave ID of the device.",
+            "default": 1,
+            "minimum": 1,
+            "maximum": 247
+        }
+    }
+},
+{
+    "name": "SERIAL",
+    "description": "Generic serial communication protocol for devices.",
+    "version": "1.0.0",
+    "device_settings": {
+        "port": {
+            "type": "string",
+            "description": "The serial port to which the device is connected.",
+            "default": "/dev/ttyUSB0"
+        },
+        "baud_rate": {
+            "type": "integer",
+            "description": "The baud rate for serial communication.",
+            "default": 9600
+        },
+        "data_bits": {
+            "type": "integer",
+            "description": "The number of data bits in each character.",
+            "default": 8
+        },
+        "parity": {
+            "type": "string",
+            "description": "The parity bit setting.",
+            "enum": ["none", "even", "odd"],
+            "default": "none"
+        },
+        "stop_bits": {
+            "type": "integer",
+            "description": "The number of stop bits to use.",
+            "default": 1
+        }
+    }
+}
+]

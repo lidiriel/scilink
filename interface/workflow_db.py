@@ -326,6 +326,9 @@ def list_device_pieces(directory):
             # Compute git hash for the metadata file
             git_hash = get_git_hash(metadata_path)
 
+            # Get device_settings (support both 'device_settings' and 'settings' keys)
+            device_settings = metadata.get('device_settings') or metadata.get('settings')
+
             pieces.append({
                 'name': metadata.get('name', 'Unknown'),
                 'description': metadata.get('description', ''),
@@ -333,12 +336,50 @@ def list_device_pieces(directory):
                 'icon_class_name': style.get('icon_class_name', 'fa-solid:cube'),
                 'category': category,
                 'tags': metadata.get('tags', []),
-                'git_hash': git_hash
+                'git_hash': git_hash,
+                'directory': directory,
+                'device_settings': device_settings,
+                'user_settings': metadata.get('user_settings')
             })
         except (json.JSONDecodeError, IOError):
             continue
 
     return jsonify(pieces)
+
+
+@app.route('/api/connections', methods=['GET'])
+def get_connections():
+    """Get all connection type definitions from connections.json"""
+    connections_path = os.path.join(PIECES_BASE_PATH, 'utils', 'connections.json')
+    try:
+        with open(connections_path, 'r') as f:
+            connections = json.load(f)
+        return jsonify(connections)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return jsonify([])
+
+
+@app.route('/api/buses', methods=['GET'])
+def list_buses():
+    """List all buses (settings with category='bus')"""
+    connection_type = request.args.get('connection_type')
+    buses = Setting.query.filter_by(category='bus').all()
+    if connection_type:
+        buses = [b for b in buses if b.data and b.data.get('connection_type') == connection_type]
+    return jsonify([b.to_dict() for b in buses])
+
+
+@app.route('/api/buses/<int:bus_id>/devices', methods=['GET'])
+def get_bus_devices(bus_id):
+    """Get all devices connected to a specific bus"""
+    bus = Setting.query.get(bus_id)
+    if not bus or bus.category != 'bus':
+        return jsonify({'error': 'Bus not found'}), 404
+
+    # Find devices that reference this bus by name
+    devices = DeviceInstalled.query.all()
+    connected = [d.to_dict() for d in devices if d.data and d.data.get('bus_name') == bus.name]
+    return jsonify(connected)
 
 
 # ============== Settings API ==============
@@ -429,6 +470,18 @@ def delete_setting(setting_id):
     setting = Setting.query.get(setting_id)
     if not setting:
         return jsonify({'error': 'Setting not found'}), 404
+
+    # Check if this is a bus with connected devices
+    if setting.category == 'bus':
+        devices = DeviceInstalled.query.all()
+        connected = [d for d in devices if d.data and d.data.get('bus_name') == setting.name]
+        if connected:
+            device_labels = ', '.join([d.label for d in connected[:3]])
+            if len(connected) > 3:
+                device_labels += f', and {len(connected) - 3} more'
+            return jsonify({
+                'error': f'Cannot delete bus: {len(connected)} device(s) are connected ({device_labels})'
+            }), 409
 
     db.session.delete(setting)
     db.session.commit()

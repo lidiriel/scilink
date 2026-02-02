@@ -1,6 +1,7 @@
 // Settings / Platforms management
 import { panelData } from './state.js';
 import { escapeHtml } from './utils.js';
+import { loadBuses } from './buses.js';
 
 // Initialize settings
 export function initSettings() {
@@ -73,6 +74,9 @@ export async function loadSettings() {
         const response = await fetch('/api/settings?category=platform');
         panelData.platformsData = await response.json();
         renderPlatformsList();
+
+        // Also load buses
+        await loadBuses();
     } catch (error) {
         console.error('Error loading platforms:', error);
     }

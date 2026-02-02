@@ -780,3 +780,106 @@
     border-color: #2563eb;
     color: #2563eb;
 }
+
+/* ============== Settings Page Tabs ============== */
+.settings-tabs-container {
+    max-width: 800px;
+}
+
+.settings-tabs {
+    display: flex;
+    gap: 0.25rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.settings-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.settings-tab:hover {
+    color: #374151;
+    background: #f9fafb;
+}
+
+.settings-tab.active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+}
+
+.settings-tab.hidden {
+    display: none;
+}
+
+.settings-tab-content {
+    display: none;
+}
+
+.settings-tab-content.active {
+    display: block;
+}
+
+/* Bus item with connection type badge */
+.settings-item-badge {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    background: #e0e7ff;
+    color: #3730a3;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    border-radius: 9999px;
+    margin-left: 0.5rem;
+}
+
+/* Connected devices count */
+.settings-item-devices {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+/* Bus display on device cards */
+.device-card-bus {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.6875rem;
+    color: #3730a3;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.device-card-bus i {
+    font-size: 0.625rem;
+}
+
+/* ============== Form Section Divider ============== */
+.form-section-divider {
+    margin: 1rem 0;
+    border: none;
+    border-top: 1px solid #e5e7eb;
+}
+
+.form-section-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-section-title i {
+    color: #2563eb;
+}

@@ -1,10 +1,12 @@
 // Devices management
 import { escapeHtml, convertIconClass } from './utils.js';
+import { getConnectionDefinition, getBusesByType, showBusTab, openBusModal, loadConnectionsDefinitions } from './buses.js';
 
 // Local state for devices
 let devicesData = [];
 let devicePieces = [];
 let currentDirectory = '';
+let currentPiece = null; // Store current piece being installed for connection setup
 
 // Initialize devices
 export function initDevices() {
@@ -49,6 +51,36 @@ export function initDevices() {
 
     // Initialize drop zone
     initDropZone();
+
+    // Bus selection handler
+    initBusSelection();
+}
+
+function initBusSelection() {
+    const busSelect = document.getElementById('device-bus-select');
+    if (busSelect) {
+        busSelect.addEventListener('change', async (e) => {
+            if (e.target.value === '__new__') {
+                // Get the current connection type from the hidden field
+                const connectionType = document.getElementById('device-connection-type')?.value;
+
+                // Close device modal and open bus modal
+                closeDeviceModal();
+
+                // Store pending device data to resume after bus creation
+                sessionStorage.setItem('pendingDeviceInstall', JSON.stringify({
+                    piece: currentPiece,
+                    label: document.getElementById('device-label').value,
+                    description: document.getElementById('device-description').value,
+                    mode: getDeviceMode(),
+                    connectionType: connectionType
+                }));
+
+                // Open bus modal with the connection type pre-selected
+                await openBusModal(null, connectionType);
+            }
+        });
+    }
 }
 
 function initDropZone() {
@@ -175,7 +207,7 @@ function renderDevicePieces(filter = '') {
     });
 }
 
-function openDeviceModal(device = null, piece = null) {
+async function openDeviceModal(device = null, piece = null) {
     const modal = document.getElementById('device-modal');
     const title = document.getElementById('device-modal-title');
     const idInput = document.getElementById('device-id');
@@ -187,9 +219,19 @@ function openDeviceModal(device = null, piece = null) {
     const typeInput = document.getElementById('device-type');
     const descInput = document.getElementById('device-description');
     const connInput = document.getElementById('device-connection');
-    const modeSelect = document.getElementById('device-mode');
+    const connectionTypeInput = document.getElementById('device-connection-type');
+    const connectionSection = document.getElementById('device-connection-section');
+    const busGroup = document.getElementById('device-bus-group');
+    const connectionFields = document.getElementById('device-connection-fields');
+    const busSelect = document.getElementById('device-bus-select');
 
     if (!modal) return;
+
+    // Ensure connections are loaded
+    await loadConnectionsDefinitions();
+
+    // Store piece for later use
+    currentPiece = piece;
 
     if (device) {
         // Edit existing device
@@ -204,6 +246,15 @@ function openDeviceModal(device = null, piece = null) {
         descInput.value = device.description || '';
         connInput.value = device.connection_string || '';
         setDeviceMode(device.mode || 'deactivate');
+
+        // Handle connection settings for existing device
+        const connectionName = device.data?.connection_type;
+        if (connectionName) {
+            connectionTypeInput.value = connectionName;
+            setupConnectionSection(connectionName, device.data);
+        } else {
+            hideConnectionSection();
+        }
     } else if (piece) {
         // New device from piece
         title.textContent = 'Install Device';
@@ -217,10 +268,112 @@ function openDeviceModal(device = null, piece = null) {
         descInput.value = piece.description || '';
         connInput.value = '';
         setDeviceMode('deactivate');
+
+        // Handle connection settings from piece metadata
+        const deviceSettings = piece.device_settings;
+        const connectionName = deviceSettings?.connection;
+        if (connectionName) {
+            connectionTypeInput.value = connectionName;
+            setupConnectionSection(connectionName, {});
+        } else {
+            hideConnectionSection();
+        }
     }
 
     modal.classList.remove('hidden');
     labelInput.focus();
+}
+
+function hideConnectionSection() {
+    const connectionSection = document.getElementById('device-connection-section');
+    const busGroup = document.getElementById('device-bus-group');
+    const connectionFields = document.getElementById('device-connection-fields');
+
+    if (connectionSection) connectionSection.classList.add('hidden');
+    if (busGroup) busGroup.classList.add('hidden');
+    if (connectionFields) connectionFields.innerHTML = '';
+}
+
+function setupConnectionSection(connectionName, existingData = {}) {
+    const connectionSection = document.getElementById('device-connection-section');
+    const busGroup = document.getElementById('device-bus-group');
+    const connectionFields = document.getElementById('device-connection-fields');
+    const busSelect = document.getElementById('device-bus-select');
+
+    if (!connectionSection) return;
+
+    const connDef = getConnectionDefinition(connectionName);
+    if (!connDef) {
+        hideConnectionSection();
+        return;
+    }
+
+    connectionSection.classList.remove('hidden');
+
+    if (connDef.bus_settings) {
+        // This connection type uses buses
+        busGroup.classList.remove('hidden');
+
+        // Populate bus dropdown
+        const buses = getBusesByType(connectionName);
+        busSelect.innerHTML = `
+            <option value="">-- Select a bus --</option>
+            ${buses.map(b => `<option value="${escapeHtml(b.name)}">${escapeHtml(b.name)}</option>`).join('')}
+            <option value="__new__">+ Create new bus...</option>
+        `;
+
+        // Set existing value if editing
+        if (existingData.bus_name) {
+            busSelect.value = existingData.bus_name;
+        }
+
+        // Generate device_settings fields (e.g., slave_id for MODBUS)
+        generateDeviceConnectionFields(connDef.device_settings, existingData);
+    } else {
+        // Direct connection (no bus needed, e.g., SERIAL)
+        busGroup.classList.add('hidden');
+        generateDeviceConnectionFields(connDef.device_settings, existingData);
+    }
+}
+
+function generateDeviceConnectionFields(deviceSettings, existingData = {}) {
+    const container = document.getElementById('device-connection-fields');
+    if (!container || !deviceSettings) {
+        if (container) container.innerHTML = '';
+        return;
+    }
+
+    container.innerHTML = Object.entries(deviceSettings)
+        .filter(([key]) => key !== 'connection') // Skip the connection reference field
+        .map(([key, config]) => {
+            const value = existingData[key] ?? config.default ?? '';
+            const required = config.required ? '<span class="required">*</span>' : '';
+
+            if (config.enum) {
+                return `
+                    <div class="form-group">
+                        <label for="device-conn-${key}">${escapeHtml(config.description || key)} ${required}</label>
+                        <select id="device-conn-${key}" name="${key}">
+                            ${config.enum.map(opt =>
+                                `<option value="${opt}" ${value === opt ? 'selected' : ''}>${opt}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                `;
+            } else {
+                const inputType = config.type === 'integer' ? 'number' : 'text';
+                return `
+                    <div class="form-group">
+                        <label for="device-conn-${key}">${escapeHtml(config.description || key)} ${required}</label>
+                        <input type="${inputType}" id="device-conn-${key}" name="${key}"
+                            value="${escapeHtml(String(value))}"
+                            ${config.minimum !== undefined ? `min="${config.minimum}"` : ''}
+                            ${config.maximum !== undefined ? `max="${config.maximum}"` : ''}
+                            placeholder="${escapeHtml(config.default ? String(config.default) : '')}">
+                    </div>
+                `;
+            }
+        }).join('');
 }
 
 function closeDeviceModal() {
@@ -269,6 +422,7 @@ function renderDevicesList() {
     list.innerHTML = devicesData.map(device => {
         const iconClass = device.icon_class ? convertIconClass(device.icon_class) : 'fa-solid fa-microchip';
         const deviceMode = device.mode || 'deactivate';
+        const busName = device.data?.bus_name;
         return `
             <div class="device-card ${getModeClass(deviceMode)}" data-id="${device.id}">
                 <div class="device-card-header">
@@ -279,6 +433,7 @@ function renderDevicesList() {
                 <div class="device-card-body">
                     <h4 class="device-card-label">${escapeHtml(device.label)}</h4>
                     <p class="device-card-piece">${escapeHtml(device.piece_name)}</p>
+                    ${busName ? `<p class="device-card-bus"><i class="fa-solid fa-link"></i> ${escapeHtml(busName)}</p>` : ''}
                     ${device.connection_string ? `<p class="device-card-connection">${escapeHtml(device.connection_string)}</p>` : ''}
                 </div>
                 <div class="device-card-footer">
@@ -454,6 +609,34 @@ async function saveDevice() {
     const typeInput = document.getElementById('device-type');
     const descInput = document.getElementById('device-description');
     const connInput = document.getElementById('device-connection');
+    const connectionTypeInput = document.getElementById('device-connection-type');
+    const busSelect = document.getElementById('device-bus-select');
+    const connectionFields = document.getElementById('device-connection-fields');
+
+    // Gather connection data
+    const connectionData = {};
+    const connectionType = connectionTypeInput?.value;
+
+    if (connectionType) {
+        connectionData.connection_type = connectionType;
+
+        if (busSelect && busSelect.value && busSelect.value !== '__new__' && busSelect.value !== '') {
+            connectionData.bus_name = busSelect.value;
+        }
+
+        // Gather device-specific connection settings
+        if (connectionFields) {
+            connectionFields.querySelectorAll('input, select').forEach(input => {
+                let value = input.value;
+                if (input.type === 'number' && value !== '') {
+                    value = parseInt(value, 10);
+                }
+                if (value !== '') {
+                    connectionData[input.name] = value;
+                }
+            });
+        }
+    }
 
     const data = {
         piece_name: pieceNameInput.value,
@@ -465,6 +648,7 @@ async function saveDevice() {
         description: descInput.value.trim() || null,
         connection_string: connInput.value.trim() || null,
         mode: getDeviceMode(),
+        data: Object.keys(connectionData).length > 0 ? connectionData : null
     };
 
     try {
