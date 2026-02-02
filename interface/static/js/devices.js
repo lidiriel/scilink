@@ -1,6 +1,6 @@
 // Devices management
 import { escapeHtml, convertIconClass } from './utils.js';
-import { getConnectionDefinition, getBusesByType, showBusTab, openBusModal, loadConnectionsDefinitions } from './buses.js';
+import { getConnectionDefinition, getBusesByType, showBusTab, openBusModal, loadConnectionsDefinitions, loadBuses } from './buses.js';
 
 // Local state for devices
 let devicesData = [];
@@ -227,8 +227,8 @@ async function openDeviceModal(device = null, piece = null) {
 
     if (!modal) return;
 
-    // Ensure connections are loaded
-    await loadConnectionsDefinitions();
+    // Ensure connections and buses are loaded
+    await loadBuses();
 
     // Store piece for later use
     currentPiece = piece;
