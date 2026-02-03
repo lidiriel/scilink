@@ -106,7 +106,7 @@ export function renderPieces(filter = '') {
             const iconClass = convertIconClass(piece.icon_class_name);
             // Add badge icon for include_block type
             const typeBadge = piece.type === 'include_block'
-                ? '<i class="fa-solid fa-cube piece-type-badge" title="Include Block"></i>'
+                ? '<i class="fa-regular fa-clone piece-type-badge" title="Include Block"></i>'
                 : '';
             pieceEl.innerHTML = `
                 <i class="${iconClass}"></i>

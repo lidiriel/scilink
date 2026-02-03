@@ -93,6 +93,7 @@ export function addCompositeNodeToWorkflow(subworkflow, x, y) {
         type: 'composite',
         label: subworkflow.name,
         subflowId: subworkflow.id,
+        iconClass: 'fa-solid:diagram-project',
         x: Math.max(0, x),
         y: Math.max(0, y)
     };
@@ -316,7 +317,6 @@ export function renderNode(node) {
             <div class="node-label">${node.label}</div>
             ${deviceModeIndicator}
         </div>
-        ${node.type === 'composite' ? '<div class="node-hint">Double-click to expand</div>' : ''}
         <div class="node-port node-port-output" data-port="output" data-node-id="${node.id}"></div>
         <button class="node-delete-btn" title="Delete node"><i class="fa-solid fa-xmark"></i></button>
     `;
@@ -385,10 +385,10 @@ export function renderNode(node) {
             const partnerId = state.stackedNodes[node.id];
             const partnerInfo = state.nodeElements[partnerId];
             if (partnerInfo) {
-                // Determine if this node is top or bottom
-                const isTop = partnerInfo.data.y > node.y;
+                // Use CSS class to determine role (stable, unlike positions)
+                const thisIsTop = nodeEl.classList.contains('stacked-top');
                 partnerInfo.data.x = node.x;
-                partnerInfo.data.y = isTop ? node.y + 50 : node.y - 50;
+                partnerInfo.data.y = thisIsTop ? node.y + 50 : node.y - 50;
                 partnerInfo.element.style.left = `${partnerInfo.data.x}px`;
                 partnerInfo.element.style.top = `${partnerInfo.data.y}px`;
             }

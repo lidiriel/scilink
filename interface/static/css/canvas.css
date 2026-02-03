@@ -95,12 +95,6 @@
     flex: 1;
 }
 
-.node-hint {
-    font-size: 0.75rem;
-    opacity: 0.9;
-    margin-top: 4px;
-}
-
 /* ============== Edges ============== */
 .edge {
     stroke: #b1b1b7;
