@@ -37,8 +37,8 @@ def list_pieces(directory):
             with open(metadata_path, 'r') as f:
                 metadata = json.load(f)
 
-            # Skip device pieces (only return blocks)
-            if metadata.get('piece_type') == 'device':
+            # Skip device pieces (only return blocks and include_blocks)
+            if metadata.get('type') == 'device':
                 continue
 
             # Extract piece info
@@ -67,7 +67,7 @@ def list_pieces(directory):
 
 @bp.route('/device-pieces/<directory>', methods=['GET'])
 def list_device_pieces(directory):
-    """List only device pieces (piece_type='device') in a directory"""
+    """List only device pieces (type='device') in a directory"""
     base_path = os.path.join(PIECES_BASE_PATH, directory)
 
     if not os.path.isdir(base_path):
@@ -81,8 +81,8 @@ def list_device_pieces(directory):
             with open(metadata_path, 'r') as f:
                 metadata = json.load(f)
 
-            # Only include pieces with piece_type='device'
-            if metadata.get('piece_type') != 'device':
+            # Only include pieces with type='device'
+            if metadata.get('type') != 'device':
                 continue
 
             # Extract piece info
