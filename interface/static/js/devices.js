@@ -451,6 +451,16 @@ function renderDevicesList() {
         const iconClass = device.icon_class ? convertIconClass(device.icon_class) : 'fa-solid fa-microchip';
         const deviceMode = device.mode || 'deactivate';
         const busName = device.data?.bus_name;
+        const connectionType = device.data?.connection_type;
+        // Build connection info line
+        let connectionInfo = '';
+        if (busName) {
+            connectionInfo = `<p class="device-card-bus"><i class="fa-solid fa-link"></i> ${escapeHtml(busName)}</p>`;
+        } else if (connectionType) {
+            connectionInfo = `<p class="device-card-bus"><i class="fa-solid fa-link"></i> ${escapeHtml(connectionType)}</p>`;
+        } else if (device.connection_string) {
+            connectionInfo = `<p class="device-card-bus"><i class="fa-solid fa-link"></i> ${escapeHtml(device.connection_string)}</p>`;
+        }
         return `
             <div class="device-card ${getModeClass(deviceMode)}" data-id="${device.id}">
                 <div class="device-card-header">
@@ -461,8 +471,7 @@ function renderDevicesList() {
                 </div>
                 <div class="device-card-body">
                     <p class="device-card-piece">${escapeHtml(device.piece_name)}</p>
-                    ${busName ? `<p class="device-card-bus"><i class="fa-solid fa-link"></i> ${escapeHtml(busName)}</p>` : ''}
-                    ${device.connection_string ? `<p class="device-card-connection">${escapeHtml(device.connection_string)}</p>` : ''}
+                    ${connectionInfo}
                 </div>
                 <div class="device-card-footer">
                     <div class="toggle-group" data-device-id="${device.id}">
