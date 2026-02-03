@@ -432,6 +432,8 @@
     border-radius: 8px;
     overflow: hidden;
     transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
 }
 
 .device-card:hover {
@@ -499,7 +501,8 @@
 }
 
 .device-card-body {
-    padding: 0.5rem 0.75rem;
+    padding: 0.375rem 0.75rem;
+    flex: 1;
 }
 
 .device-card-label {
@@ -1083,6 +1086,25 @@
     font-size: 0.75rem;
     color: #9ca3af;
     font-style: italic;
+}
+
+/* ============== Form Helpers ============== */
+.form-help-text {
+    margin: 0 0 0.375rem 0;
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-style: italic;
+}
+
+.form-warning {
+    margin: 0.375rem 0 0 0;
+    font-size: 0.75rem;
+    color: #dc2626;
+    font-weight: 500;
+}
+
+.form-warning.hidden {
+    display: none;
 }
 
 /* ============== Form Section Divider ============== */

@@ -56,7 +56,8 @@ def create_device():
         connection_string=data.get('connection_string'),
         mode=data.get('mode', 'deactivate'),
         data=data.get('data'),
-        platform_id=data.get('platform_id')
+        platform_id=data.get('platform_id'),
+        depends_on_id=data.get('depends_on_id')
     )
     db.session.add(device)
     db.session.commit()
@@ -96,6 +97,8 @@ def update_device(device_id):
         device.data = data['data']
     if 'platform_id' in data:
         device.platform_id = data['platform_id']
+    if 'depends_on_id' in data:
+        device.depends_on_id = data['depends_on_id']
 
     db.session.commit()
     return jsonify({'success': True, 'device': device.to_dict()})

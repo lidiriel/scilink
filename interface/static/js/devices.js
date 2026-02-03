@@ -102,7 +102,6 @@ function initBusSelection() {
                     piece: currentPiece,
                     label: document.getElementById('device-label').value,
                     description: document.getElementById('device-description').value,
-                    mode: getDeviceMode(),
                     connectionType: connectionType
                 }));
 
@@ -283,7 +282,9 @@ async function openDeviceModal(device = null, piece = null) {
         descInput.value = device.description || '';
         connInput.value = device.connection_string || '';
         if (platformSelect) platformSelect.value = device.platform_id || '';
-        setDeviceMode(device.mode || 'deactivate');
+
+        // Handle dependency for existing device
+        setupDependencySection(device.data?.dependency_def || null, device.depends_on_id);
 
         // Handle connection settings for existing device
         const connectionName = device.data?.connection_type;
@@ -306,10 +307,12 @@ async function openDeviceModal(device = null, piece = null) {
         renderTags(tagsContainer, piece.tags || []);
         descInput.value = piece.description || '';
         connInput.value = '';
-        setDeviceMode('deactivate');
+
+        // Handle dependency from piece metadata
+        const deviceSettings = piece.device_settings;
+        setupDependencySection(deviceSettings?.dependency || null, null);
 
         // Handle connection settings from piece metadata
-        const deviceSettings = piece.device_settings;
         const connectionName = deviceSettings?.connection;
         if (connectionName) {
             connectionTypeInput.value = connectionName;
@@ -323,11 +326,62 @@ async function openDeviceModal(device = null, piece = null) {
     labelInput.focus();
 }
 
+function setupDependencySection(dependency, selectedDeviceId) {
+    const section = document.getElementById('device-dependency-section');
+    const select = document.getElementById('device-dependency-select');
+    const desc = document.getElementById('device-dependency-desc');
+    const warning = document.getElementById('device-dependency-warning');
+
+    if (!section || !select) return;
+
+    // No dependency defined — hide section and remove required
+    if (!dependency || dependency.type !== 'device') {
+        section.classList.add('hidden');
+        select.removeAttribute('required');
+        return;
+    }
+
+    // Show the section
+    section.classList.remove('hidden');
+    select.setAttribute('required', '');
+
+    // Set description
+    if (desc) desc.textContent = dependency.description || '';
+
+    // Find compatible installed devices by tag match
+    const requiredTag = dependency.tag;
+    const compatible = devicesData.filter(d => {
+        const tags = d.data?.tags || [];
+        return tags.some(t => t.includes(requiredTag) || requiredTag.includes(t));
+    });
+
+    if (compatible.length === 0) {
+        select.innerHTML = '<option value="">-- No compatible device installed --</option>';
+        if (warning) {
+            warning.textContent = `No installed device with tag "${requiredTag}" found. Install one first.`;
+            warning.classList.remove('hidden');
+        }
+    } else {
+        select.innerHTML = '<option value="">-- Select a device --</option>'
+            + compatible.map(d =>
+                `<option value="${d.id}">${escapeHtml(d.label)} (${escapeHtml(d.piece_name)})</option>`
+            ).join('');
+        if (warning) warning.classList.add('hidden');
+    }
+
+    // Set selected value if editing
+    if (selectedDeviceId) {
+        select.value = selectedDeviceId;
+    }
+}
+
 function hideConnectionSection() {
     const connectionSection = document.getElementById('device-connection-section');
     const busGroup = document.getElementById('device-bus-group');
     const connectionFields = document.getElementById('device-connection-fields');
+    const connectionTypeInput = document.getElementById('device-connection-type');
 
+    if (connectionTypeInput) connectionTypeInput.value = '';
     if (connectionSection) connectionSection.classList.add('hidden');
     if (busGroup) busGroup.classList.add('hidden');
     if (connectionFields) connectionFields.innerHTML = '';
@@ -683,23 +737,6 @@ function renderSidebarDevices() {
     });
 }
 
-function getDeviceMode() {
-    const radios = document.querySelectorAll('#device-form input[name="device-mode"]');
-    for (const radio of radios) {
-        if (radio.checked) {
-            return radio.value;
-        }
-    }
-    return 'deactivate';
-}
-
-function setDeviceMode(mode) {
-    const radios = document.querySelectorAll('#device-form input[name="device-mode"]');
-    for (const radio of radios) {
-        radio.checked = (radio.value === mode);
-    }
-}
-
 async function saveDevice() {
     const idInput = document.getElementById('device-id');
     const pieceNameInput = document.getElementById('device-piece-name');
@@ -748,6 +785,19 @@ async function saveDevice() {
         }
     }
 
+    // Handle dependency
+    const dependencySelect = document.getElementById('device-dependency-select');
+    const dependencySection = document.getElementById('device-dependency-section');
+    let dependsOnId = null;
+    if (dependencySection && !dependencySection.classList.contains('hidden') && dependencySelect?.value) {
+        dependsOnId = parseInt(dependencySelect.value, 10);
+        // Store the dependency definition so it can be restored when editing
+        const deviceSettings = currentPiece?.device_settings;
+        if (deviceSettings?.dependency) {
+            connectionData.dependency_def = deviceSettings.dependency;
+        }
+    }
+
     const platformSelect = document.getElementById('device-platform');
     const platformId = platformSelect?.value ? parseInt(platformSelect.value, 10) : null;
 
@@ -760,22 +810,23 @@ async function saveDevice() {
         icon_class: iconClassInput.value || null,
         description: descInput.value.trim() || null,
         connection_string: connInput.value.trim() || null,
-        mode: getDeviceMode(),
         data: Object.keys(connectionData).length > 0 ? connectionData : null,
-        platform_id: platformId
+        platform_id: platformId,
+        depends_on_id: dependsOnId
     };
 
     try {
         let response;
         if (idInput.value) {
-            // Update existing
+            // Update existing (don't send mode — mode is managed from the card)
             response = await fetch(`/api/devices/${idInput.value}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
         } else {
-            // Create new
+            // Create new — default mode is deactivate
+            data.mode = 'deactivate';
             response = await fetch('/api/devices', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

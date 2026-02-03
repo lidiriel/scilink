@@ -35,6 +35,16 @@
                 <textarea id="device-description" rows="2" placeholder="Optional description..."></textarea>
             </div>
 
+            <!-- Dependency Section (shown when piece has a device dependency) -->
+            <div id="device-dependency-section" class="form-group hidden">
+                <label for="device-dependency-select">Depends on <span class="required">*</span></label>
+                <p id="device-dependency-desc" class="form-help-text"></p>
+                <select id="device-dependency-select" required>
+                    <option value="">-- Select a device --</option>
+                </select>
+                <p id="device-dependency-warning" class="form-warning hidden"></p>
+            </div>
+
             <!-- Dynamic Connection Section (Collapsible) -->
             <div id="device-connection-section" class="form-collapsible hidden collapsed">
                 <div class="form-section-divider"></div>
@@ -66,23 +76,6 @@
                 <input type="text" id="device-connection" placeholder="e.g., 192.168.1.100:502 or /dev/ttyUSB0">
             </div>
 
-            <div class="form-group">
-                <label>Mode</label>
-                <div class="toggle-group">
-                    <input type="radio" name="device-mode" id="modal-activate" value="activate" />
-                    <label for="modal-activate" class="mode-activate" title="Activate">
-                        <i class="fa-solid fa-plug-circle-check"></i>
-                    </label>
-                    <input type="radio" name="device-mode" id="modal-deactivate" value="deactivate" checked />
-                    <label for="modal-deactivate" class="mode-deactivate" title="Deactivate">
-                        <i class="fa-solid fa-plug-circle-xmark"></i>
-                    </label>
-                    <input type="radio" name="device-mode" id="modal-simulate" value="simulate" />
-                    <label for="modal-simulate" class="mode-simulate" title="Simulate">
-                        <i class="fa-solid fa-wave-square"></i>
-                    </label>
-                </div>
-            </div>
             <div class="modal-actions">
                 <button type="button" class="btn btn-secondary" id="device-cancel">Cancel</button>
                 <button type="submit" class="btn btn-primary">
