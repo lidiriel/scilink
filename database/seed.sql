@@ -9,12 +9,7 @@ INSERT INTO experiments (name, description) VALUES
 -- Sample settings (platforms)
 INSERT INTO settings (category, name, description, data) VALUES
     ('platform', 'Microbiology', 'Automated microbiology platform', '{"arch": "arm64", "os": "linux"}'),
-    ('platform', 'Electrotechnic', 'Sensor acquisition board', '{"arch": "avr", "os": "none"}');
-
--- Sample devices
-INSERT INTO devices_installed (piece_name, piece_directory, label, device_type, icon_class, description, mode, data) VALUES
-    ('temperature_sensor', 'sensors', 'Temp Sensor #1', 'sensor', 'fa-solid:temperature-half', 'Main lab temperature sensor', 'activate', '{"connection_type": "MODBUS-RTU", "bus_name": "MODBUS-Main", "slave_id": 1}'),
-    ('temperature_sensor', 'sensors', 'Temp Sensor #2', 'sensor', 'fa-solid:temperature-half', 'Secondary temperature sensor', 'simulate', '{"connection_type": "MODBUS-RTU", "bus_name": "MODBUS-Main", "slave_id": 2}'),
+    ('platform', 'Test Platform', 'A testing platform', '{"arch": "arm64", "os": "Linux"}');
 
 -- Sample bus setting
 INSERT INTO settings (category, name, description, data) VALUES

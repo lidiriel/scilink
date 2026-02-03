@@ -1047,6 +1047,19 @@
     font-size: 0.625rem;
 }
 
+.device-card-platform {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.6875rem;
+    color: #047857;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.device-card-platform i {
+    font-size: 0.625rem;
+}
+
 /* ============== Form Section Divider ============== */
 .form-section-divider {
     margin: 1rem 0;

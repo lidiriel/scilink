@@ -57,9 +57,11 @@ CREATE TABLE devices_installed (
     mode VARCHAR(50) DEFAULT 'deactivate',
     data JSONB,
     depends_on_id INTEGER,
+    platform_id INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (depends_on_id) REFERENCES devices_installed(id) ON DELETE SET NULL
+    FOREIGN KEY (depends_on_id) REFERENCES devices_installed(id) ON DELETE SET NULL,
+    FOREIGN KEY (platform_id) REFERENCES settings(id) ON DELETE SET NULL
 );
 
 -- Create blocks_used table (tracks blocks/pieces used in workflows, must be before nodes due to FK)
@@ -119,6 +121,7 @@ CREATE INDEX idx_settings_category ON settings(category);
 CREATE INDEX idx_devices_installed_piece_name ON devices_installed(piece_name);
 CREATE INDEX idx_devices_installed_mode ON devices_installed(mode);
 CREATE INDEX idx_devices_installed_depends_on ON devices_installed(depends_on_id);
+CREATE INDEX idx_devices_installed_platform ON devices_installed(platform_id);
 CREATE INDEX idx_blocks_used_workflow_id ON blocks_used(workflow_id);
 CREATE INDEX idx_blocks_used_piece_name ON blocks_used(piece_name);
 

@@ -5,8 +5,24 @@ import { getConnectionDefinition, getBusesByType, showBusTab, openBusModal, load
 // Local state for devices
 let devicesData = [];
 let devicePieces = [];
+let platformsCache = []; // Cached platforms for card display
 let currentDirectory = '';
 let currentPiece = null; // Store current piece being installed for connection setup
+
+// Load platforms into a select element
+async function loadPlatformOptions(selectEl) {
+    if (!selectEl) return;
+    try {
+        const response = await fetch('/api/settings?category=platform');
+        platformsCache = await response.json();
+        selectEl.innerHTML = '<option value="">-- Select a platform --</option>'
+            + platformsCache.map(p =>
+                `<option value="${p.id}">${escapeHtml(p.name)}</option>`
+            ).join('');
+    } catch (error) {
+        console.error('Error loading platforms:', error);
+    }
+}
 
 // Initialize devices
 export function initDevices() {
@@ -239,10 +255,15 @@ async function openDeviceModal(device = null, piece = null) {
     const connectionFields = document.getElementById('device-connection-fields');
     const busSelect = document.getElementById('device-bus-select');
 
+    const platformSelect = document.getElementById('device-platform');
+
     if (!modal) return;
 
     // Ensure connections and buses are loaded
     await loadBuses();
+
+    // Load platforms into dropdown
+    await loadPlatformOptions(platformSelect);
 
     // Store piece for later use
     currentPiece = piece;
@@ -259,6 +280,7 @@ async function openDeviceModal(device = null, piece = null) {
         typeInput.value = device.device_type;
         descInput.value = device.description || '';
         connInput.value = device.connection_string || '';
+        if (platformSelect) platformSelect.value = device.platform_id || '';
         setDeviceMode(device.mode || 'deactivate');
 
         // Handle connection settings for existing device
@@ -413,6 +435,14 @@ export async function loadDevices() {
     // Load piece directories first
     await loadPieceDirectories();
 
+    // Load platforms cache for card display
+    try {
+        const response = await fetch('/api/settings?category=platform');
+        platformsCache = await response.json();
+    } catch (error) {
+        console.error('Error loading platforms:', error);
+    }
+
     // Then load installed devices
     try {
         const response = await fetch('/api/devices');
@@ -461,6 +491,14 @@ function renderDevicesList() {
         } else if (device.connection_string) {
             connectionInfo = `<p class="device-card-bus"><i class="fa-solid fa-link"></i> ${escapeHtml(device.connection_string)}</p>`;
         }
+        // Resolve platform name
+        const platform = device.platform_id
+            ? platformsCache.find(p => p.id === device.platform_id)
+            : null;
+        const platformInfo = platform
+            ? `<p class="device-card-platform"><i class="fa-solid fa-server"></i> ${escapeHtml(platform.name)}</p>`
+            : '';
+
         return `
             <div class="device-card ${getModeClass(deviceMode)}" data-id="${device.id}">
                 <div class="device-card-header">
@@ -471,6 +509,7 @@ function renderDevicesList() {
                 </div>
                 <div class="device-card-body">
                     <p class="device-card-piece">${escapeHtml(device.piece_name)}</p>
+                    ${platformInfo}
                     ${connectionInfo}
                 </div>
                 <div class="device-card-footer">
@@ -675,6 +714,9 @@ async function saveDevice() {
         }
     }
 
+    const platformSelect = document.getElementById('device-platform');
+    const platformId = platformSelect?.value ? parseInt(platformSelect.value, 10) : null;
+
     const data = {
         piece_name: pieceNameInput.value,
         piece_directory: pieceDirectoryInput.value,
@@ -685,7 +727,8 @@ async function saveDevice() {
         description: descInput.value.trim() || null,
         connection_string: connInput.value.trim() || null,
         mode: getDeviceMode(),
-        data: Object.keys(connectionData).length > 0 ? connectionData : null
+        data: Object.keys(connectionData).length > 0 ? connectionData : null,
+        platform_id: platformId
     };
 
     try {
