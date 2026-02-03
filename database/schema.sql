@@ -61,7 +61,8 @@ CREATE TABLE devices_installed (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (depends_on_id) REFERENCES devices_installed(id) ON DELETE SET NULL,
-    FOREIGN KEY (platform_id) REFERENCES settings(id) ON DELETE SET NULL
+    FOREIGN KEY (platform_id) REFERENCES settings(id) ON DELETE SET NULL,
+    UNIQUE (label, platform_id)
 );
 
 -- Create blocks_used table (tracks blocks/pieces used in workflows, must be before nodes due to FK)

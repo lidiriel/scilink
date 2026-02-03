@@ -1060,6 +1060,31 @@
     font-size: 0.625rem;
 }
 
+/* ============== Device Tags ============== */
+.device-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    min-height: 1.5rem;
+    align-items: center;
+}
+
+.device-tag {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #1e40af;
+    background: #dbeafe;
+    border-radius: 9999px;
+}
+
+.device-tag-empty {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    font-style: italic;
+}
+
 /* ============== Form Section Divider ============== */
 .form-section-divider {
     margin: 1rem 0;

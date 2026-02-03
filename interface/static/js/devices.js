@@ -247,6 +247,7 @@ async function openDeviceModal(device = null, piece = null) {
     const iconClassInput = document.getElementById('device-icon-class');
     const labelInput = document.getElementById('device-label');
     const typeInput = document.getElementById('device-type');
+    const tagsContainer = document.getElementById('device-tags');
     const descInput = document.getElementById('device-description');
     const connInput = document.getElementById('device-connection');
     const connectionTypeInput = document.getElementById('device-connection-type');
@@ -278,6 +279,7 @@ async function openDeviceModal(device = null, piece = null) {
         iconClassInput.value = device.icon_class || '';
         labelInput.value = device.label;
         typeInput.value = device.device_type;
+        renderTags(tagsContainer, device.data?.tags || []);
         descInput.value = device.description || '';
         connInput.value = device.connection_string || '';
         if (platformSelect) platformSelect.value = device.platform_id || '';
@@ -299,8 +301,9 @@ async function openDeviceModal(device = null, piece = null) {
         pieceDirectoryInput.value = piece.directory || '';
         pieceHashInput.value = piece.git_hash || '';
         iconClassInput.value = piece.icon_class_name || '';
-        labelInput.value = piece.node_label || piece.name;
+        labelInput.value = resolveDeviceLabel(piece);
         typeInput.value = piece.category;
+        renderTags(tagsContainer, piece.tags || []);
         descInput.value = piece.description || '';
         connInput.value = '';
         setDeviceMode('deactivate');
@@ -424,6 +427,28 @@ function generateDeviceConnectionFields(deviceSettings, existingData = {}) {
                 `;
             }
         }).join('');
+}
+
+function resolveDeviceLabel(piece) {
+    const deviceSettings = piece.device_settings || piece.settings;
+    const defaultLabel = deviceSettings?.device_id?.default;
+    if (!defaultLabel) {
+        return piece.node_label || piece.name;
+    }
+    // Count existing devices with the same piece_name to resolve %n
+    const count = devicesData.filter(d => d.piece_name === piece.name).length + 1;
+    return defaultLabel.replace('%n', count);
+}
+
+function renderTags(container, tags) {
+    if (!container) return;
+    if (!tags || tags.length === 0) {
+        container.innerHTML = '<span class="device-tag-empty">No tags</span>';
+        return;
+    }
+    container.innerHTML = tags.map(tag =>
+        `<span class="device-tag">${escapeHtml(tag)}</span>`
+    ).join('');
 }
 
 function closeDeviceModal() {
@@ -689,9 +714,18 @@ async function saveDevice() {
     const busSelect = document.getElementById('device-bus-select');
     const connectionFields = document.getElementById('device-connection-fields');
 
-    // Gather connection data
+    // Gather connection data and tags
     const connectionData = {};
     const connectionType = connectionTypeInput?.value;
+
+    // Preserve tags from the piece or existing device data
+    const tagsContainer = document.getElementById('device-tags');
+    if (tagsContainer) {
+        const tagEls = tagsContainer.querySelectorAll('.device-tag');
+        if (tagEls.length > 0) {
+            connectionData.tags = Array.from(tagEls).map(el => el.textContent);
+        }
+    }
 
     if (connectionType) {
         connectionData.connection_type = connectionType;

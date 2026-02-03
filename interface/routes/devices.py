@@ -37,6 +37,14 @@ def create_device():
     if not data.get('device_type'):
         return jsonify({'error': 'Device type is required'}), 400
 
+    # Check label uniqueness per platform
+    platform_id = data.get('platform_id')
+    existing = DeviceInstalled.query.filter_by(
+        label=data['label'], platform_id=platform_id
+    ).first()
+    if existing:
+        return jsonify({'error': f'A device with label "{data["label"]}" already exists on this platform'}), 409
+
     device = DeviceInstalled(
         piece_name=data['piece_name'],
         piece_directory=data['piece_directory'],
@@ -64,6 +72,15 @@ def update_device(device_id):
         return jsonify({'error': 'Device not found'}), 404
 
     data = request.json
+
+    if 'label' in data or 'platform_id' in data:
+        new_label = data.get('label', device.label)
+        new_platform_id = data.get('platform_id', device.platform_id)
+        existing = DeviceInstalled.query.filter_by(
+            label=new_label, platform_id=new_platform_id
+        ).filter(DeviceInstalled.id != device_id).first()
+        if existing:
+            return jsonify({'error': f'A device with label "{new_label}" already exists on this platform'}), 409
 
     if 'label' in data:
         device.label = data['label']
