@@ -198,8 +198,12 @@ class DeviceInstalled(db.Model):
     connection_string = db.Column(db.String(500), nullable=True)  # Connection info (IP, serial, etc.)
     mode = db.Column(db.String(50), default='deactivate')  # 'activate', 'deactivate', 'simulate'
     data = db.Column(db.JSON, nullable=True)  # Flexible JSON field for device-specific config
+    depends_on_id = db.Column(db.Integer, db.ForeignKey('devices_installed.id', ondelete='SET NULL'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Self-referential relationship
+    depends_on = db.relationship('DeviceInstalled', remote_side=[id], backref='dependents', foreign_keys=[depends_on_id])
 
     def to_dict(self):
         """Convert device to dictionary format"""
@@ -215,6 +219,7 @@ class DeviceInstalled(db.Model):
             'connection_string': self.connection_string,
             'mode': self.mode,
             'data': self.data,
+            'depends_on_id': self.depends_on_id,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
