@@ -211,6 +211,21 @@ export function autoLayoutNodes() {
     const startX = 50;
     const startY = 50;
 
+    // Identify stacked top nodes (include_blocks that sit on top of another node)
+    // These should not be laid out independently — they follow their partner
+    const stackedTopIds = new Set();
+    for (const [id] of Object.entries(state.stackedNodes)) {
+        const nodeInfo = state.nodeElements[id];
+        if (nodeInfo && nodeInfo.element.classList.contains('stacked-top')) {
+            stackedTopIds.add(id);
+        }
+    }
+
+    // Remove stacked-top nodes from level groups (they follow their partner)
+    for (const lvl in levelGroups) {
+        levelGroups[lvl] = levelGroups[lvl].filter(n => !stackedTopIds.has(n.id));
+    }
+
     // Position nodes
     const sortedLevels = Object.keys(levelGroups).map(Number).sort((a, b) => a - b);
 
@@ -218,22 +233,48 @@ export function autoLayoutNodes() {
         const nodesInLevel = levelGroups[level];
         const x = startX + levelIndex * horizontalSpacing;
 
-        // Center nodes vertically based on canvas height
+        // Calculate height accounting for stacked pairs (bottom node + top node = 2 * nodeHeight)
+        let totalHeight = 0;
+        nodesInLevel.forEach((node, i) => {
+            const hasStackedTop = state.stackedNodes[node.id] && !stackedTopIds.has(node.id);
+            totalHeight += hasStackedTop ? nodeHeight * 2 : nodeHeight;
+            if (i > 0) totalHeight += verticalGap;
+        });
+
         const canvas = document.getElementById('canvas');
         const canvasHeight = canvas ? canvas.getBoundingClientRect().height : 600;
-        const totalHeight = nodesInLevel.length * nodeHeight + (nodesInLevel.length - 1) * verticalGap;
         const startYForLevel = Math.max(startY, (canvasHeight - totalHeight) / 2);
 
-        nodesInLevel.forEach((node, nodeIndex) => {
-            node.x = x;
-            node.y = startYForLevel + nodeIndex * verticalSpacing;
+        let currentY = startYForLevel;
+        nodesInLevel.forEach((node) => {
+            const hasStackedTop = state.stackedNodes[node.id] && !stackedTopIds.has(node.id);
 
-            // Update DOM element position
+            if (hasStackedTop) {
+                // Position the stacked-top (include_block) above this node
+                const topId = state.stackedNodes[node.id];
+                const topNode = nodes.find(n => n.id === topId);
+                if (topNode) {
+                    topNode.x = x;
+                    topNode.y = currentY;
+                    const topEl = state.nodeElements[topId]?.element;
+                    if (topEl) {
+                        topEl.style.left = topNode.x + 'px';
+                        topEl.style.top = topNode.y + 'px';
+                    }
+                }
+                currentY += nodeHeight; // move down for the bottom node
+            }
+
+            node.x = x;
+            node.y = currentY;
+
             const nodeEl = state.nodeElements[node.id]?.element;
             if (nodeEl) {
                 nodeEl.style.left = node.x + 'px';
                 nodeEl.style.top = node.y + 'px';
             }
+
+            currentY += nodeHeight + verticalGap;
         });
     });
 

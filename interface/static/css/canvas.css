@@ -296,6 +296,14 @@ body.connecting .node-port.port-active {
     transform: translateX(-50%) scale(1.5);
 }
 
+/* ============== Edge Selected State ============== */
+/* Hide node buttons when an edge is selected to avoid visual clutter */
+body.edge-selected .node-delete-btn,
+body.edge-selected .node-rotate-btn {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
 /* ============== Edge Selection and Handles ============== */
 .edge.selected {
     stroke: #2563eb !important;
@@ -494,4 +502,32 @@ body.connecting .node-port.port-active {
     background: #22c55e;
     border-color: #22c55e;
     color: white;
+}
+
+/* ============== Stacked Nodes ============== */
+.node.stacked-top {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom: 1px dashed #666;
+}
+
+.node.stacked-bottom {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-top: none;
+}
+
+/* Hide internal ports on stacked nodes */
+.node.stacked-top .node-port-output {
+    display: none;
+}
+
+.node.stacked-bottom .node-port-input {
+    display: none;
+}
+
+/* Hide rotate button on stacked nodes */
+.node.stacked-top .node-rotate-btn,
+.node.stacked-bottom .node-rotate-btn {
+    display: none;
 }

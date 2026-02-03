@@ -56,7 +56,8 @@ def list_pieces(directory):
                 'icon_class_name': style.get('icon_class_name', 'fa-solid:cube'),
                 'category': category,
                 'tags': metadata.get('tags', []),
-                'git_hash': git_hash
+                'git_hash': git_hash,
+                'type': metadata.get('type')
             })
         except (json.JSONDecodeError, IOError):
             continue

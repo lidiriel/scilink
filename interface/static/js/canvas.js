@@ -1,7 +1,7 @@
 // Canvas drop zone and keyboard shortcuts
 import { state } from './state.js';
 import { deselectEdge, deleteEdge } from './edges.js';
-import { addNodeToWorkflow, addCompositeNodeToWorkflow, addDeviceNodeToWorkflow } from './nodes.js';
+import { addNodeToWorkflow, addCompositeNodeToWorkflow, addDeviceNodeToWorkflow, findNearbyStackableNode, addStackedIncludeBlock } from './nodes.js';
 import { applyViewportTransform } from './zoom.js';
 
 // Initialize canvas as drop zone for pieces
@@ -63,6 +63,16 @@ export function initCanvasDropZone() {
         const pieceData = e.dataTransfer.getData('application/json');
         if (pieceData) {
             const piece = JSON.parse(pieceData);
+
+            // Check if it's an include_block that can stack
+            if (piece.type === 'include_block') {
+                const nearbyNode = findNearbyStackableNode(x, y);
+                if (nearbyNode) {
+                    addStackedIncludeBlock(piece, nearbyNode);
+                    return;
+                }
+            }
+
             addNodeToWorkflow(piece, x, y);
         }
     });
@@ -100,8 +110,8 @@ function initLeftClickPan(canvas) {
     }
 
     canvas.addEventListener('pointerdown', (e) => {
-        // Left mouse button (button === 0) and not on interactive elements
-        if (e.button === 0 && !isOnInteractiveElement(e.target)) {
+        // Left mouse button (button === 0), not on interactive elements, and no edge selected
+        if (e.button === 0 && !isOnInteractiveElement(e.target) && !state.selectedEdge) {
             couldPan = true;
             startX = e.clientX;
             startY = e.clientY;

@@ -154,8 +154,10 @@ export function selectEdge(edge, index) {
     if (state.selectedEdge && state.selectedEdge.from === edge.from && state.selectedEdge.to === edge.to) {
         // Deselect if clicking on already selected edge
         state.selectedEdge = null;
+        document.body.classList.remove('edge-selected');
     } else {
         state.selectedEdge = { from: edge.from, to: edge.to, index };
+        document.body.classList.add('edge-selected');
         // Add edge-connected class to source and target nodes
         markEdgeConnectedNodes(edge.from, edge.to);
     }
@@ -183,6 +185,7 @@ export function clearEdgeConnectedClasses() {
 export function deselectEdge() {
     if (state.selectedEdge && !state.isReconnecting) {
         state.selectedEdge = null;
+        document.body.classList.remove('edge-selected');
         clearEdgeConnectedClasses();
         drawEdges();
     }
@@ -195,6 +198,7 @@ export function deleteEdge(edgeIndex) {
 
     workflow.edges.splice(edgeIndex, 1);
     state.selectedEdge = null;
+    document.body.classList.remove('edge-selected');
     clearEdgeConnectedClasses();
     drawEdges();
 }

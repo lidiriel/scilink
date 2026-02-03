@@ -366,6 +366,21 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    flex: 1;
+}
+
+/* Piece type badge (for include_block) */
+.piece-type-badge {
+    width: 16px !important;
+    font-size: 12px !important;
+    color: #8b5cf6 !important;
+    opacity: 0.7;
+    flex-shrink: 0;
+}
+
+.piece-item:hover .piece-type-badge {
+    color: #7c3aed !important;
+    opacity: 1;
 }
 
 /* Piece dragging state */

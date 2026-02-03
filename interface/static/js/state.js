@@ -62,7 +62,10 @@ export const state = {
     currentPage: 'experiments',
 
     // Breadcrumbs
-    breadcrumbs: []
+    breadcrumbs: [],
+
+    // Stacked nodes (include_block on top of standard block)
+    stackedNodes: {}  // { topNodeId: bottomNodeId, bottomNodeId: topNodeId }
 };
 
 // Zoom constants
