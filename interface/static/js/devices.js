@@ -284,7 +284,19 @@ async function openDeviceModal(device = null, piece = null) {
         if (platformSelect) platformSelect.value = device.platform_id || '';
 
         // Handle dependency for existing device
-        setupDependencySection(device.data?.dependency_def || null, device.depends_on_id);
+        const editDeviceSettings = device.data?.dependency_def
+            ? (() => {
+                // Reconstruct deviceSettings from piece data if possible
+                const matchedPiece = devicePieces.find(p => p.name === device.piece_name);
+                return matchedPiece?.device_settings || null;
+            })()
+            : null;
+        setupDependencySection(
+            device.data?.dependency_def || null,
+            device.depends_on_id,
+            editDeviceSettings,
+            device.data?.dependency_matches
+        );
 
         // Handle connection settings for existing device
         const connectionName = device.data?.connection_type;
@@ -310,7 +322,7 @@ async function openDeviceModal(device = null, piece = null) {
 
         // Handle dependency from piece metadata
         const deviceSettings = piece.device_settings;
-        setupDependencySection(deviceSettings?.dependency || null, null);
+        setupDependencySection(deviceSettings?.dependency || null, null, deviceSettings, null);
 
         // Handle connection settings from piece metadata
         const connectionName = deviceSettings?.connection;
@@ -326,24 +338,35 @@ async function openDeviceModal(device = null, piece = null) {
     labelInput.focus();
 }
 
-function setupDependencySection(dependency, selectedDeviceId) {
+function setupDependencySection(dependency, selectedDeviceId, deviceSettings, existingMatches) {
     const section = document.getElementById('device-dependency-section');
     const select = document.getElementById('device-dependency-select');
     const desc = document.getElementById('device-dependency-desc');
     const warning = document.getElementById('device-dependency-warning');
+    const matchesContainer = document.getElementById('device-dependency-matches');
 
     if (!section || !select) return;
+
+    // Clear previous matches
+    if (matchesContainer) {
+        matchesContainer.innerHTML = '';
+        matchesContainer.classList.add('hidden');
+    }
+
+    // Remove previous change listener
+    const newSelect = select.cloneNode(true);
+    select.parentNode.replaceChild(newSelect, select);
 
     // No dependency defined — hide section and remove required
     if (!dependency || dependency.type !== 'device') {
         section.classList.add('hidden');
-        select.removeAttribute('required');
+        newSelect.removeAttribute('required');
         return;
     }
 
     // Show the section
     section.classList.remove('hidden');
-    select.setAttribute('required', '');
+    newSelect.setAttribute('required', '');
 
     // Set description
     if (desc) desc.textContent = dependency.description || '';
@@ -356,23 +379,101 @@ function setupDependencySection(dependency, selectedDeviceId) {
     });
 
     if (compatible.length === 0) {
-        select.innerHTML = '<option value="">-- No compatible device installed --</option>';
+        newSelect.innerHTML = '<option value="">-- No compatible device installed --</option>';
         if (warning) {
             warning.textContent = `No installed device with tag "${requiredTag}" found. Install one first.`;
             warning.classList.remove('hidden');
         }
     } else {
-        select.innerHTML = '<option value="">-- Select a device --</option>'
+        newSelect.innerHTML = '<option value="">-- Select a device --</option>'
             + compatible.map(d =>
                 `<option value="${d.id}">${escapeHtml(d.label)} (${escapeHtml(d.piece_name)})</option>`
             ).join('');
         if (warning) warning.classList.add('hidden');
     }
 
+    // Add change listener for dependency matching
+    newSelect.addEventListener('change', () => {
+        const selectedId = parseInt(newSelect.value, 10);
+        const selectedDevice = devicesData.find(d => d.id === selectedId);
+        renderDependencyMatches(dependency, deviceSettings, selectedDevice, null);
+    });
+
     // Set selected value if editing
     if (selectedDeviceId) {
-        select.value = selectedDeviceId;
+        newSelect.value = selectedDeviceId;
+        // Render matches for the pre-selected device
+        const selectedDevice = devicesData.find(d => d.id === selectedDeviceId);
+        renderDependencyMatches(dependency, deviceSettings, selectedDevice, existingMatches);
     }
+}
+
+function renderDependencyMatches(dependency, deviceSettings, selectedDevice, existingMatches) {
+    const container = document.getElementById('device-dependency-matches');
+    if (!container) return;
+
+    container.innerHTML = '';
+    container.classList.add('hidden');
+
+    // Need matches definition and a selected device
+    const matchParams = dependency?.matches?.user_inputs;
+    if (!matchParams || !Array.isArray(matchParams) || matchParams.length === 0 || !selectedDevice) {
+        return;
+    }
+
+    // Read target device's user_inputs
+    const targetInputs = selectedDevice.data?.user_inputs;
+    if (!targetInputs || Object.keys(targetInputs).length === 0) {
+        container.innerHTML = '<p class="form-warning">Selected device has no available inputs to match.</p>';
+        container.classList.remove('hidden');
+        return;
+    }
+
+    container.classList.remove('hidden');
+
+    // For each param in matches.user_inputs, look up its type from deviceSettings
+    matchParams.forEach(paramName => {
+        const paramDef = deviceSettings?.[paramName];
+        const paramType = paramDef?.type;
+
+        // Filter target user_inputs by matching type
+        const compatibleTargets = Object.entries(targetInputs)
+            .filter(([, def]) => !paramType || def.type === paramType);
+
+        const existingValue = existingMatches?.[paramName] || '';
+
+        const row = document.createElement('div');
+        row.className = 'dependency-match-row';
+
+        const label = document.createElement('span');
+        label.className = 'dep-match-label';
+        label.textContent = paramName;
+
+        const typeTag = document.createElement('span');
+        typeTag.className = 'dep-match-type';
+        typeTag.textContent = paramType || '?';
+
+        const arrow = document.createElement('i');
+        arrow.className = 'fa-solid fa-arrow-right dep-match-arrow';
+
+        const select = document.createElement('select');
+        select.className = 'dependency-match-select';
+        select.dataset.param = paramName;
+
+        let optionsHtml = '<option value="">-- Select --</option>';
+        compatibleTargets.forEach(([key, def]) => {
+            const selected = existingValue === key ? ' selected' : '';
+            const desc = def.description ? ` — ${def.description}` : '';
+            optionsHtml += `<option value="${escapeHtml(key)}"${selected}>${escapeHtml(key)}</option>`;
+        });
+        select.innerHTML = optionsHtml;
+
+        row.appendChild(label);
+        row.appendChild(typeTag);
+        row.appendChild(arrow);
+        row.appendChild(select);
+        container.appendChild(row);
+    });
 }
 
 function hideConnectionSection() {
@@ -785,6 +886,17 @@ async function saveDevice() {
         }
     }
 
+    // Store user_inputs so dependent devices can read them later
+    if (currentPiece?.user_inputs) {
+        connectionData.user_inputs = currentPiece.user_inputs;
+    } else if (idInput.value) {
+        // Editing — preserve existing user_inputs
+        const existingDevice = devicesData.find(d => d.id === parseInt(idInput.value));
+        if (existingDevice?.data?.user_inputs) {
+            connectionData.user_inputs = existingDevice.data.user_inputs;
+        }
+    }
+
     // Handle dependency
     const dependencySelect = document.getElementById('device-dependency-select');
     const dependencySection = document.getElementById('device-dependency-section');
@@ -795,6 +907,27 @@ async function saveDevice() {
         const deviceSettings = currentPiece?.device_settings;
         if (deviceSettings?.dependency) {
             connectionData.dependency_def = deviceSettings.dependency;
+        }
+        // Preserve existing dependency_def when editing without currentPiece
+        if (!deviceSettings?.dependency && idInput.value) {
+            const existingDevice = devicesData.find(d => d.id === parseInt(idInput.value));
+            if (existingDevice?.data?.dependency_def) {
+                connectionData.dependency_def = existingDevice.data.dependency_def;
+            }
+        }
+
+        // Gather dependency parameter matches
+        const matchSelects = document.querySelectorAll('.dependency-match-select');
+        if (matchSelects.length > 0) {
+            const matches = {};
+            matchSelects.forEach(sel => {
+                if (sel.value) {
+                    matches[sel.dataset.param] = sel.value;
+                }
+            });
+            if (Object.keys(matches).length > 0) {
+                connectionData.dependency_matches = matches;
+            }
         }
     }
 

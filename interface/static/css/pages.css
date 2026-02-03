@@ -1088,6 +1088,59 @@
     font-style: italic;
 }
 
+/* ============== Dependency Matches ============== */
+.dependency-matches-container {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.dependency-matches-container.hidden {
+    display: none;
+}
+
+.dependency-match-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.5rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+}
+
+.dep-match-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #1f2937;
+    min-width: 60px;
+}
+
+.dep-match-type {
+    display: inline-block;
+    padding: 0.0625rem 0.375rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: #6d28d9;
+    background: #ede9fe;
+    border-radius: 9999px;
+}
+
+.dep-match-arrow {
+    color: #9ca3af;
+    font-size: 0.75rem;
+}
+
+.dependency-match-row select {
+    flex: 1;
+    padding: 0.25rem 0.375rem;
+    font-size: 0.8125rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background: white;
+}
+
 /* ============== Form Helpers ============== */
 .form-help-text {
     margin: 0 0 0.375rem 0;

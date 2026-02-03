@@ -106,7 +106,8 @@ def list_device_pieces(directory):
                 'git_hash': git_hash,
                 'directory': directory,
                 'device_settings': device_settings,
-                'user_settings': metadata.get('user_settings')
+                'user_settings': metadata.get('user_settings'),
+                'user_inputs': metadata.get('user_inputs') or metadata.get('user_input')
             })
         except (json.JSONDecodeError, IOError):
             continue
