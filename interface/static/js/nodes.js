@@ -3,6 +3,7 @@ import { workflows, state } from './state.js';
 import { convertIconClass } from './utils.js';
 import { drawEdges } from './edges.js';
 import { startConnection } from './connections.js';
+import { openNodeInputsModal } from './node-inputs.js';
 
 // Forward declarations for circular dependency handling
 let drillDownFn = null;
@@ -339,6 +340,13 @@ export function renderNode(node) {
     if (node.type === 'composite' && node.subflowId) {
         nodeEl.addEventListener('dblclick', () => {
             if (drillDownFn) drillDownFn(node.subflowId, node.label);
+        });
+    }
+
+    // Double-click handler for default/device nodes → open user inputs modal
+    if (node.type === 'default' || node.type === 'device') {
+        nodeEl.addEventListener('dblclick', () => {
+            openNodeInputsModal(node, state.currentWorkflowId);
         });
     }
 

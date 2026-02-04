@@ -63,7 +63,8 @@ def update_workflow(workflow_id):
                 device_id=node_data.get('deviceId'),
                 block_id=block_id,
                 position_x=node_data['x'],
-                position_y=node_data['y']
+                position_y=node_data['y'],
+                data=node_data.get('data')
             )
             db.session.add(node)
 
@@ -132,7 +133,8 @@ def create_workflow():
                 device_id=node_data.get('deviceId'),
                 block_id=block_id,
                 position_x=node_data['x'],
-                position_y=node_data['y']
+                position_y=node_data['y'],
+                data=node_data.get('data')
             )
             db.session.add(node)
 
@@ -150,6 +152,21 @@ def create_workflow():
 
     db.session.commit()
     return jsonify({'success': True, 'workflow': workflow.to_dict()}), 201
+
+
+@bp.route('/workflow/<workflow_id>/nodes/<node_id>', methods=['PUT'])
+def update_node(workflow_id, node_id):
+    """Update a single node's data"""
+    node = Node.query.get((node_id, workflow_id))
+    if not node:
+        return jsonify({'error': 'Node not found'}), 404
+
+    req = request.json
+    if 'data' in req:
+        node.data = req['data']
+
+    db.session.commit()
+    return jsonify({'success': True, 'node': node.to_dict()})
 
 
 @bp.route('/workflow/<workflow_id>', methods=['DELETE'])

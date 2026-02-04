@@ -11,6 +11,7 @@ import { initNavigation, navigateToPage, setLoadSettings, setLoadExperiments, se
 import { initSettings, loadSettings, editPlatform, deletePlatform, togglePlatform, addBusToPlatform } from './settings.js';
 import { initDevices, loadDevices, editDevice, deleteDevice, loadSidebarDevices } from './devices.js';
 import { initBuses, loadBuses, editBus, deleteBus, openBusModal } from './buses.js';
+import { initNodeInputs } from './node-inputs.js';
 import {
     initExperiments,
     loadExperiments,
@@ -236,6 +237,10 @@ async function saveWorkflow() {
                     nodeData.pieceHash = n.pieceHash;
                     nodeData.iconClass = n.iconClass;
                 }
+                // Node user input data
+                if (n.data) {
+                    nodeData.data = n.data;
+                }
                 return nodeData;
             }),
             edges: workflow.edges.map(e => ({
@@ -351,6 +356,7 @@ initSettings();
 initExperiments();
 initDevices();
 initBuses();
+initNodeInputs();
 initCanvasToolbar();
 
 // Initialize tabbed sidebar panel

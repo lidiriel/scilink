@@ -90,6 +90,7 @@ CREATE TABLE nodes (
     block_id INTEGER,
     position_x INTEGER NOT NULL,
     position_y INTEGER NOT NULL,
+    data JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id, workflow_id),

@@ -57,7 +57,8 @@ def list_pieces(directory):
                 'category': category,
                 'tags': metadata.get('tags', []),
                 'git_hash': git_hash,
-                'type': metadata.get('type')
+                'type': metadata.get('type'),
+                'user_inputs': metadata.get('user_inputs') or metadata.get('user_input')
             })
         except (json.JSONDecodeError, IOError):
             continue

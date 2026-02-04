@@ -678,6 +678,13 @@ function renderDevicesList() {
         const platformInfo = platform
             ? `<p class="device-card-platform"><i class="fa-solid fa-server"></i> ${escapeHtml(platform.name)}</p>`
             : '';
+        // Resolve dependency name
+        const dependsOn = device.depends_on_id
+            ? devicesData.find(d => d.id === device.depends_on_id)
+            : null;
+        const dependencyInfo = dependsOn
+            ? `<p class="device-card-dependency"><i class="fa-solid fa-arrow-turn-up fa-rotate-90"></i> ${escapeHtml(dependsOn.label)}</p>`
+            : '';
 
         return `
             <div class="device-card ${getModeClass(deviceMode)}" data-id="${device.id}">
@@ -690,6 +697,7 @@ function renderDevicesList() {
                 <div class="device-card-body">
                     <p class="device-card-piece">${escapeHtml(device.piece_name)}</p>
                     ${platformInfo}
+                    ${dependencyInfo}
                     ${connectionInfo}
                 </div>
                 <div class="device-card-footer">

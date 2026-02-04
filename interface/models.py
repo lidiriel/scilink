@@ -80,6 +80,7 @@ class Node(db.Model):
     block_id = db.Column(db.Integer, db.ForeignKey('blocks_used.id', ondelete='SET NULL'), nullable=True)
     position_x = db.Column(db.Integer, nullable=False)
     position_y = db.Column(db.Integer, nullable=False)
+    data = db.Column(db.JSON, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -117,6 +118,8 @@ class Node(db.Model):
                 node_dict['pieceDirectory'] = block.piece_directory
                 node_dict['pieceHash'] = block.piece_hash
                 node_dict['iconClass'] = block.icon_class
+        if self.data:
+            node_dict['data'] = self.data
         return node_dict
 
     def __repr__(self):

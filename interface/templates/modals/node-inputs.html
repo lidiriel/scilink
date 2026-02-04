@@ -1,0 +1,24 @@
+<!-- Node User Inputs Modal -->
+<div id="node-inputs-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="node-inputs-title">Node Settings</h3>
+            <button class="modal-close" id="node-inputs-close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form id="node-inputs-form" class="modal-form">
+            <input type="hidden" id="node-inputs-node-id">
+            <input type="hidden" id="node-inputs-workflow-id">
+            <div id="node-inputs-fields"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" id="node-inputs-cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-save"></i>
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
