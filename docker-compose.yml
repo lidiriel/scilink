@@ -53,11 +53,12 @@ services:
 
   platform:
     build: ./platform
+    volumes:
+      - ./platform:/platform
+      - ./pieces:/platform/pieces
     restart: always
     env_file:
       - .env
-    volumes:
-      - ./pieces:/pieces
     depends_on:
       - db
       - nats
