@@ -13,35 +13,6 @@ docker compose up -d
 
 Visit `http://localhost:5000` in your browser.
 
-## Project Structure
-
-```
-scilink-src/
-├── docker-compose.yml          # Service orchestration
-├── .env                        # Environment variables
-├── database/
-│   ├── schema.sql              # Database schema (tables, indexes, triggers)
-│   ├── seed.sql                # Test/mock data
-│   ├── init_db.py              # Standalone DB init script
-│   └── data/                   # Persistent PostgreSQL data (git-ignored)
-├── interface/
-│   ├── Dockerfile              # Flask app container
-│   ├── workflow_db.py          # App entry point (registers blueprints)
-│   ├── models.py               # SQLAlchemy models
-│   ├── requirements.txt        # Python dependencies
-│   ├── routes/                 # Flask blueprints
-│   │   ├── core.py             # Health, static pages
-│   │   ├── workflows.py        # Workflow CRUD
-│   │   ├── pieces.py           # Piece/block listing
-│   │   ├── devices.py          # Device management
-│   │   ├── settings.py         # Settings/buses
-│   │   ├── experiments.py      # Experiments
-│   │   └── helpers.py          # Shared utilities
-│   ├── static/                 # JS, CSS, assets
-│   └── templates/              # Jinja2 HTML templates
-└── pieces/                     # Block/device definitions (metadata.json)
-```
-
 ## Prerequisites
 
 - Docker and Docker Compose
@@ -184,78 +155,6 @@ python workflow_db.py
 ```
 
 Visit `http://localhost:5000`.
-
-## Database Schema
-
-### Tables
-
-| Table               | Description                                    |
-|---------------------|------------------------------------------------|
-| `experiments`       | Experiment metadata                            |
-| `workflows`         | Workflow definitions (supports hierarchy)       |
-| `nodes`             | Workflow nodes (blocks, devices, composites)    |
-| `edges`             | Connections between nodes                       |
-| `blocks_used`       | Tracks block/piece usage in workflows           |
-| `devices_installed` | Installed device instances                      |
-| `settings`          | Platforms, buses, and other configuration        |
-
-### Device Dependencies
-
-Devices support a dependency relationship via `depends_on_id`:
-
-```
-Device A ──depends_on──> Device B <──depends_on── Device C
-```
-
-Multiple devices can depend on the same device. Deleting a parent device sets `depends_on_id` to NULL on its dependents.
-
-## API Endpoints
-
-### Workflows
-| Method   | Endpoint               | Description        |
-|----------|------------------------|--------------------|
-| `GET`    | `/api/workflows`       | List all workflows |
-| `GET`    | `/api/workflow/<id>`   | Get workflow       |
-| `POST`   | `/api/workflow`        | Create workflow    |
-| `PUT`    | `/api/workflow/<id>`   | Update workflow    |
-| `DELETE` | `/api/workflow/<id>`   | Delete workflow    |
-
-### Pieces
-| Method | Endpoint                         | Description            |
-|--------|----------------------------------|------------------------|
-| `GET`  | `/api/piece-directories`         | List piece directories |
-| `GET`  | `/api/pieces/<directory>`        | List block pieces      |
-| `GET`  | `/api/device-pieces/<directory>` | List device pieces     |
-| `GET`  | `/api/connections`               | Get connection types   |
-
-### Devices
-| Method   | Endpoint              | Description    |
-|----------|-----------------------|----------------|
-| `GET`    | `/api/devices`        | List devices   |
-| `POST`   | `/api/devices`        | Install device |
-| `PUT`    | `/api/devices/<id>`   | Update device  |
-| `DELETE` | `/api/devices/<id>`   | Delete device  |
-
-### Settings
-| Method   | Endpoint              | Description      |
-|----------|-----------------------|------------------|
-| `GET`    | `/api/settings`       | List settings    |
-| `POST`   | `/api/settings`       | Create setting   |
-| `PUT`    | `/api/settings/<id>`  | Update setting   |
-| `DELETE` | `/api/settings/<id>`  | Delete setting   |
-
-### Experiments
-| Method   | Endpoint                 | Description        |
-|----------|--------------------------|--------------------|
-| `GET`    | `/api/experiments`       | List experiments   |
-| `POST`   | `/api/experiments`       | Create experiment  |
-| `PUT`    | `/api/experiments/<id>`  | Update experiment  |
-| `DELETE` | `/api/experiments/<id>`  | Delete experiment  |
-
-### Other
-| Method | Endpoint       | Description  |
-|--------|----------------|--------------|
-| `GET`  | `/api/health`  | Health check |
 
 ## Troubleshooting
 
