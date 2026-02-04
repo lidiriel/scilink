@@ -4,9 +4,11 @@ SciLink is a web platform for managing scientific instruments and building exper
 
 ## Architecture
 
-- **Backend**: Flask (Python) with SQLAlchemy ORM
+- **Interface**: Flask (Python) with SQLAlchemy ORM
 - **Database**: PostgreSQL with JSONB for flexible data storage
 - **Frontend**: Vanilla JavaScript (ES6 modules), Jinja2 templates, CSS
+- **Messaging**: NATS with JetStream for async communication
+- **Platform**: Rust supervisor service for workflow execution
 
 ## Project Structure
 
@@ -75,6 +77,13 @@ scilink-src/
 │           ├── bus.html          # Bus config
 │           ├── experiment.html   # Experiment form
 │           └── node-inputs.html  # Node settings
+├── nats/
+│   └── nats.conf                 # NATS server config (JetStream enabled)
+├── platform/
+│   ├── Dockerfile                # Rust multi-stage build
+│   ├── Cargo.toml                # Rust dependencies (async-nats, tokio)
+│   └── src/
+│       └── main.rs               # Supervisor entry point
 └── pieces/
     ├── default/
     │   ├── blocks/               # Workflow blocks

@@ -25,10 +25,13 @@ For local development without Docker:
 
 ### Services
 
-| Service     | Image              | Port | Description         |
-|-------------|--------------------|------|---------------------|
-| `db`        | postgres:18-alpine | 5432 | PostgreSQL database |
-| `interface` | custom (Flask)     | 5000 | Web application     |
+| Service       | Image              | Port | Description                      |
+|---------------|--------------------|------|----------------------------------|
+| `db`          | postgres:18-alpine | 5432 | PostgreSQL database              |
+| `interface`   | custom (Flask)     | 5000 | Web application                  |
+| `nats`        | nats:latest        | 4222 | NATS server with JetStream       |
+| `nats-client` | natsio/nats-box    | -    | NATS debug/admin shell           |
+| `platform`    | custom (Rust)      | -    | Supervisor service               |
 
 ### Environment Variables
 

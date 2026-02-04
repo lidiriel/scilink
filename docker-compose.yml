@@ -29,3 +29,38 @@ services:
       - FLASK=${FLASK_ENV}
     depends_on:
       - db
+
+  nats:
+    image: nats:latest
+    container_name: nats_main
+    restart: always
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    volumes:
+      - ./nats/nats.conf:/etc/nats/nats.conf
+      - nats_data:/data/jetstream
+    command: ["-c", "/etc/nats/nats.conf"]
+
+  nats-client:
+    image: natsio/nats-box
+    container_name: nats_client
+    restart: always
+    depends_on:
+      - nats
+    entrypoint: /bin/sh
+    tty: true
+
+  platform:
+    build: ./platform
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./pieces:/pieces
+    depends_on:
+      - db
+      - nats
+
+volumes:
+  nats_data:
