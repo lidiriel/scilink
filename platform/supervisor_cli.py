@@ -7,19 +7,40 @@ import argparse
 import asyncio
 import sys
 
+import json
+
 import nats
+from nats.js.api import StreamConfig
+
+
+STREAM_NAME = "SUPERVISOR_STREAM"
+STREAM_SUBJECTS = ["supervisor.command.*"]
+
+
+async def ensure_stream(js):
+    """Create or update the JetStream stream for supervisor commands."""
+    try:
+        await js.find_stream_by_subject("supervisor.command.*")
+    except nats.js.errors.NotFoundError:
+        await js.add_stream(StreamConfig(
+            name=STREAM_NAME,
+            subjects=STREAM_SUBJECTS,
+        ))
 
 
 async def send_command(nats_url: str, command: str, service: str = "") -> str:
-    """Send a command to the supervisor and get the response."""
+    """Send a command to the supervisor via JetStream and get the response."""
     nc = await nats.connect(nats_url)
     try:
-        response = await nc.request(
+        js = nc.jetstream()
+        await ensure_stream(js)
+
+        payload = json.dumps({"service": service}).encode()
+        ack = await js.publish(
             f"supervisor.command.{command}",
-            service.encode(),
-            timeout=10
+            payload,
         )
-        return response.data.decode()
+        return f"Published to {ack.stream} (seq: {ack.seq})"
     finally:
         await nc.close()
 
