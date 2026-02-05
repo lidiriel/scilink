@@ -55,7 +55,7 @@ services:
     build: ./platform
     volumes:
       - ./platform:/platform
-      - ./pieces:/platform/pieces
+      - ./pieces:/pieces
     restart: always
     env_file:
       - .env
