@@ -3,5 +3,12 @@
     "detail": {
         "line1": "first line of description",
         "line2": "secondline of description"
+    },
+    "nav": {
+        "settings": "Settings",
+        "devices": "Devices",
+        "experiments": "Experiments",
+        "workflows": "Workflows",
+        "monitor": "Monitor"
     }
 }

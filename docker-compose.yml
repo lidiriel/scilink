@@ -39,6 +39,12 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+      - ./pieces:/pieces
+    environment:
+      - FLASK=${FLASK_ENV}
+      - NODE_ENV=development
+    depends_on:
+      - db
 
   nats:
     image: nats:latest

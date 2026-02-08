@@ -3,5 +3,12 @@
     "detail": {
         "line1": "descriptin premiere ligne",
         "line2": "description seconde ligne"
+    },
+    "nav": {
+        "settings": "Paramètres",
+        "devices": "Appareils",
+        "experiments": "Expériences",
+        "workflows": "Workflows",
+        "monitor": "Moniteur"
     }
 }

@@ -1,36 +1,36 @@
-import { useTranslation } from "react-i18next";
-import { Container } from "@mantine/core";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { AppShell } from "@mantine/core";
 
-// Import styles of packages that you've installed.
-// All packages except `@mantine/hooks` require styles imports
 import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
 
-// custom components
-import Header from "./components/Header";
-import Test from "./components/Test";
+import AppNavbar from "./components/Navbar";
+import DevicesPage from "./pages/DevicesPage";
+import ExperimentsPage from "./pages/ExperimentsPage";
+import WorkflowsPage from "./pages/WorkflowsPage";
+import MonitorPage from "./pages/MonitorPage";
+import SettingsPage from "./pages/SettingsPage";
 
-//------------- main app -----------------
 const App = () => {
-  const { t } = useTranslation();
-  const line1 = t("detail.line1");
-  const line2 = t("detail.line2");
-
   return (
     <MantineProvider>
-      <div style={{ minHeight: '100vh', padding: '2rem' }}>
-        <Header />
-        <Container size="sm" style={{ textAlign: 'center', marginTop: '7rem' }}>
-          <h1 style={{ fontSize: '2.25rem', fontWeight: 'bold' }}>{t("greeting")}</h1>
-          <p style={{ marginTop: '2rem' }}>{line1}</p>
-          <p style={{ marginTop: '0.5rem' }}>{line2}</p>
-        </Container>
-        <p>SciLink Frontend</p>
-        <Test />
-      </div>
+      <AppShell navbar={{ width: 220, breakpoint: "sm" }} padding="md">
+        <AppShell.Navbar p="xs">
+          <AppNavbar />
+        </AppShell.Navbar>
+        <AppShell.Main>
+          <Routes>
+            <Route path="/" element={<Navigate to="/devices" replace />} />
+            <Route path="/devices" element={<DevicesPage />} />
+            <Route path="/experiments" element={<ExperimentsPage />} />
+            <Route path="/workflows" element={<WorkflowsPage />} />
+            <Route path="/monitor" element={<MonitorPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+          </Routes>
+        </AppShell.Main>
+      </AppShell>
     </MantineProvider>
   );
 };
 
-export default App
-
+export default App;
