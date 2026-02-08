@@ -29,6 +29,16 @@ services:
       - FLASK=${FLASK_ENV}
     depends_on:
       - db
+  
+  frontend-dev:
+    build:
+      context: ./frontend
+      target: dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
 
   nats:
     image: nats:latest
@@ -39,7 +49,7 @@ services:
       - "8222:8222"
     volumes:
       - ./nats/nats.conf:/etc/nats/nats.conf
-      - nats_data:/data/jetstream
+      - ./nats/data/jetstream:/data/jetstream
     command: ["-c", "/etc/nats/nats.conf"]
 
   nats-client:
@@ -62,6 +72,3 @@ services:
     depends_on:
       - db
       - nats
-
-volumes:
-  nats_data:

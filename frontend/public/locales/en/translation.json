@@ -1,0 +1,7 @@
+{
+    "greeting": "Welcome to the Scilink application",
+    "detail": {
+        "line1": "first line of description",
+        "line2": "secondline of description"
+    }
+}
