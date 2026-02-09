@@ -15,6 +15,14 @@ FROM base AS build
 COPY . .
 RUN npm run build
 
+# ---- API: Flask backend for dev ----
+FROM python:3.13-alpine AS api
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+EXPOSE 5001
+CMD ["python", "server.py"]
+
 # ---- Prod: serve static files with Flask ----
 FROM python:3.13-alpine AS prod
 WORKDIR /app

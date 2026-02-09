@@ -1,0 +1,141 @@
+/* ============== Settings Page ============== */
+.settings-section {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    max-width: 800px;
+}
+
+.settings-section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.settings-section-title i {
+    color: #2563eb;
+}
+
+.settings-section-desc {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin: 0 0 1rem 0;
+}
+
+.settings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.settings-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+}
+
+.settings-item.selected {
+    background: #f0fdf4;
+    border-color: #22c55e;
+}
+
+.settings-item-info {
+    flex: 1;
+}
+
+.settings-item-name {
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 0.25rem 0;
+}
+
+.settings-item-desc {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.settings-item-host {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin: 0.25rem 0 0 0;
+    font-family: monospace;
+}
+
+.settings-item-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.settings-item-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #6b7280;
+    transition: all 0.15s;
+}
+
+.settings-item-btn:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: white;
+}
+
+.settings-item-btn.active {
+    background: #22c55e;
+    border-color: #22c55e;
+    color: white;
+}
+
+.settings-item-btn.active:hover {
+    background: #16a34a;
+    border-color: #16a34a;
+}
+
+.settings-item-btn.delete:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+}
+
+.settings-add-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background 0.15s;
+}
+
+.settings-add-btn:hover {
+    background: #1d4ed8;
+}
+
+.settings-empty {
+    text-align: center;
+    color: #9ca3af;
+    padding: 2rem;
+    font-size: 0.875rem;
+}

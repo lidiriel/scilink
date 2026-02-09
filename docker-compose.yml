@@ -30,6 +30,22 @@ services:
     depends_on:
       - db
   
+  frontend-api:
+    build:
+      context: ./frontend
+      target: api
+    env_file:
+      - .env
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./frontend:/app
+      - ./pieces:/pieces
+    environment:
+      - FLASK_ENV=${FLASK_ENV}
+    depends_on:
+      - db
+
   frontend-dev:
     build:
       context: ./frontend
@@ -45,6 +61,7 @@ services:
       - NODE_ENV=development
     depends_on:
       - db
+      - frontend-api
 
   nats:
     image: nats:latest

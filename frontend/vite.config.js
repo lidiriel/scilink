@@ -7,4 +7,12 @@ export default defineConfig({
   css: {
     postcss: './postcss.config.cjs',
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: process.env.API_URL || 'http://frontend-api:5001',
+        changeOrigin: true,
+      },
+    },
+  },
 })
