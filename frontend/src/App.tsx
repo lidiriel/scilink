@@ -5,6 +5,7 @@ import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
 
 import AppNavbar from "./components/Navbar";
+import Header from "./components/Header";
 import DevicesPage from "./pages/DevicesPage";
 import ExperimentsPage from "./pages/ExperimentsPage";
 import WorkflowsPage from "./pages/WorkflowsPage";
@@ -14,7 +15,10 @@ import SettingsPage from "./pages/SettingsPage";
 const App = () => {
   return (
     <MantineProvider>
-      <AppShell navbar={{ width: 220, breakpoint: "sm" }} padding="md">
+      <AppShell header={{ height: 56 }} navbar={{ width: 220, breakpoint: "sm" }} padding="md">
+        <AppShell.Header>
+          <Header />
+        </AppShell.Header>
         <AppShell.Navbar p="xs">
           <AppNavbar />
         </AppShell.Navbar>

@@ -19,7 +19,6 @@ const SettingsPage = () => {
           platformsStore.save(values);
         }}
       />
-      <Title order={2}>{t("nav.settings")}</Title>
       <Title order={2}><IconServer/>Platforms</Title>
       <p className="settings-section-desc">Configure execution platforms and their bus connections for your workflows.</p>
       <Button leftSection={<IconServerSpark size={14} />} variant="default" onClick={open}>
