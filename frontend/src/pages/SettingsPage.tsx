@@ -19,9 +19,11 @@ const SettingsPage = () => {
           platformsStore.save(values);
         }}
       />
-      <Title order={2}><IconServer/>Platforms</Title>
+      <Title order={2} className="settings-section-title">
+        <IconServer color="var(--mantine-color-blue-filled)" />Platforms
+      </Title>
       <p className="settings-section-desc">Configure execution platforms and their bus connections for your workflows.</p>
-      <Button leftSection={<IconServerSpark size={14} />} variant="default" onClick={open}>
+      <Button leftSection={<IconServerSpark size={14} />} variant="filled" onClick={open}>
         Add Platform
       </Button>
       <PlatformCards />

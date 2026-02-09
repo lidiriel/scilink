@@ -1,40 +1,139 @@
-.title {
-  font-size: 34px;
-  font-weight: 500;
+/* ============================================
+   Platform Cards - Expandable card list
+   ============================================ */
+
+.platforms-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 800px;
+    margin-top: 1rem;
 }
 
-.description {
-  max-width: 600px;
-  margin: auto;
-
-  &::after {
-    content: '';
-    display: block;
-    background-color: var(--mantine-color-blue-filled);
-    width: 45px;
-    height: 2px;
-    margin-top: var(--mantine-spacing-sm);
-    margin-left: auto;
-    margin-right: auto;
-  }
+.platform-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
-.card {
-  border: 1px solid light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
+.platform-card-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    cursor: pointer;
+    transition: background 0.15s;
 }
 
-.cardTitle {
-  &::after {
-    content: '';
-    display: block;
-    background-color: var(--mantine-color-blue-filled);
-    width: 45px;
-    height: 2px;
-    margin-top: var(--mantine-spacing-sm);
-  }
+.platform-card-header:hover {
+    background: #f9fafb;
 }
 
-.button {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+.platform-card-expand {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+
+.platform-card.expanded .platform-card-expand {
+    transform: rotate(90deg);
+}
+
+.platform-card-info {
+    flex: 1;
+    min-width: 0;
+    margin-left: 0.5rem;
+}
+
+.platform-card-name {
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.platform-card-host {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0.25rem 0 0 0;
+    font-family: monospace;
+}
+
+.platform-card-desc {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    margin: 0.25rem 0 0 0;
+}
+
+.platform-card-stats {
+    font-size: 0.6875rem;
+    color: #9ca3af;
+    margin: 0.25rem 0 0 0;
+}
+
+.platform-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: 1rem;
+}
+
+.platform-card-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #6b7280;
+    transition: all 0.15s;
+}
+
+.platform-card-btn:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.platform-card-btn.delete:hover {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #ef4444;
+}
+
+/* Platform Buses Section */
+.platform-buses {
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    padding: 1rem;
+}
+
+.platform-buses-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.platform-buses-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.platform-empty {
+    text-align: center;
+    color: #9ca3af;
+    padding: 2rem;
+    font-size: 0.875rem;
 }

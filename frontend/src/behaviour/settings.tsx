@@ -14,8 +14,9 @@ interface Settings {
 
 interface PlatformData extends Settings {
     data: {
-        arch: string;
-        os: string;
+        host: string;
+        arch?: string;
+        os?: string;
     }
 }
 
@@ -104,6 +105,32 @@ class PlatformsElements {
         }
     } // end of savePlatform
 
+    async delete(id: number) {
+        if (!confirm('Are you sure you want to delete this platform?')) {
+            return;
+        }
+        try {
+            const response = await fetch(`/api/settings/${id}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                this.update();
+            } else {
+                let errorMsg = 'Failed to delete platform';
+                try {
+                    const error = await response.json();
+                    errorMsg = error.error || errorMsg;
+                } catch (e) {
+                    errorMsg = `Server error: ${response.status} ${response.statusText}`;
+                }
+                console.error('Delete platform failed:', response.status, errorMsg);
+                alert(errorMsg);
+            }
+        } catch (error) {
+            console.error('Error deleting platform:', error);
+            alert(`Failed to delete platform: ${(error as Error).message}`);
+        }
+    }
 
 }
 

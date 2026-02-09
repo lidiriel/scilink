@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Modal, TextInput, Textarea, Group, Button } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconDeviceFloppy } from "@tabler/icons-react";
@@ -22,10 +23,10 @@ const PlatformModal = ({ opened, onClose, onSubmit, initialValues }: PlatformMod
 
   const form = useForm<PlatformFormValues>({
     initialValues: {
-      id: initialValues?.id ?? "",
-      name: initialValues?.name ?? "",
-      description: initialValues?.description ?? "",
-      host: initialValues?.host ?? "",
+      id: "",
+      name: "",
+      description: "",
+      host: "",
     },
     validate: {
       name: (value) => (value.trim().length > 0 ? null : "Name is required"),
@@ -33,9 +34,19 @@ const PlatformModal = ({ opened, onClose, onSubmit, initialValues }: PlatformMod
     },
   });
 
+  useEffect(() => {
+    if (opened) {
+      form.setValues({
+        id: initialValues?.id ?? "",
+        name: initialValues?.name ?? "",
+        description: initialValues?.description ?? "",
+        host: initialValues?.host ?? "",
+      });
+    }
+  }, [opened]);
+
   const handleSubmit = (values: PlatformFormValues) => {
     onSubmit(values);
-    form.reset();
     onClose();
   };
 
