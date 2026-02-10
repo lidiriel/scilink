@@ -11,10 +11,10 @@ import {
 import LanguageSelector from "./LanguageSelector";
 
 const navItems = [
-  { label: "nav.devices", path: "/devices", icon: CpuChipIcon },
-  { label: "nav.experiments", path: "/experiments", icon: BeakerIcon },
-  { label: "nav.workflows", path: "/workflows", icon: ArrowPathIcon },
   { label: "nav.monitor", path: "/monitor", icon: ChartBarIcon },
+  { label: "nav.workflows", path: "/workflows", icon: ArrowPathIcon },
+  { label: "nav.experiments", path: "/experiments", icon: BeakerIcon },
+  { label: "nav.devices", path: "/devices", icon: CpuChipIcon },
   { label: "nav.settings", path: "/settings", icon: CogIcon },
 ];
 
