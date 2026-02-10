@@ -1,6 +1,7 @@
 // Data storage for website state, such as platforms and buses data
 // If need see https://mobx.js.org/README.html for state management
 import { makeAutoObservable } from "mobx"
+import { loadConnectionsDefinitions, connectionsDefinitions } from "./pieces";
 
 interface Settings {
     id: number; 
@@ -36,6 +37,7 @@ interface BusData extends Settings {
 class PlatformsElements {
     platforms: PlatformData[] = [];
     platformBuses: { [index: number]: BusData[] } = {};
+    buses: BusData[] = [];
 
     constructor() {
         makeAutoObservable(this);
@@ -59,6 +61,7 @@ class PlatformsElements {
             this.platformBuses[platformId].push(bus);
         });
     }
+
 
     async save(values: { id: string; name: string; description: string; host: string }) {
         const data = {
@@ -132,46 +135,82 @@ class PlatformsElements {
         }
     }
 
-}
+    async saveBus(values: { id: string; name: string; description: string; platform_id: number; connection_type: string; [key: string]: any }) {
+        const { id, name, description, platform_id, connection_type, ...busSettings } = values;
+        const data = {
+            category: 'bus',
+            name: name.trim(),
+            description: description.trim() || null,
+            data: {
+                platform_id,
+                connection_type,
+                ...busSettings,
+            }
+        };
 
-/*
-// Local state
-let busesData = [];
-let connectionsDefinitions = [];
+        try {
+            let response;
+            if (values.id) {
+                response = await fetch(`/api/settings/${values.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            } else {
+                response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            }
 
-// Load connections definitions
-export async function loadConnectionsDefinitions() {
-    if (connectionsDefinitions.length > 0) {
-        return connectionsDefinitions; // Already loaded
+            if (response.ok) {
+                this.update();
+            } else {
+                let errorMsg = 'Failed to save bus';
+                try {
+                    const error = await response.json();
+                    errorMsg = error.error || errorMsg;
+                } catch (e) {
+                    errorMsg = `Server error: ${response.status} ${response.statusText}`;
+                }
+                console.error('Save bus failed:', response.status, errorMsg);
+                alert(errorMsg);
+            }
+        } catch (error) {
+            console.error('Error saving bus:', error);
+            alert(`Failed to save bus: ${(error as Error).message}`);
+        }
     }
-    try {
-        const response = await fetch('/api/connections');
-        connectionsDefinitions = await response.json();
-        return connectionsDefinitions;
-    } catch (error) {
-        console.error('Error loading connections:', error);
-        return [];
+
+    async deleteBus(id: number) {
+        if (!confirm('Are you sure you want to delete this bus?')) {
+            return;
+        }
+        try {
+            const response = await fetch(`/api/settings/${id}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                this.update();
+            } else {
+                let errorMsg = 'Failed to delete bus';
+                try {
+                    const error = await response.json();
+                    errorMsg = error.error || errorMsg;
+                } catch (e) {
+                    errorMsg = `Server error: ${response.status} ${response.statusText}`;
+                }
+                console.error('Delete bus failed:', response.status, errorMsg);
+                alert(errorMsg);
+            }
+        } catch (error) {
+            console.error('Error deleting bus:', error);
+            alert(`Failed to delete bus: ${(error as Error).message}`);
+        }
     }
+
 }
-
-// Get connections that have bus_settings
-export function getBusConnectionTypes() {
-    return connectionsDefinitions.filter(c => c.bus_settings);
-}
-
-// Load buses
-export async function loadBuses() {
-    await loadConnectionsDefinitions();
-
-    try {
-        const response = await fetch('/api/settings?category=bus');
-        busesData = await response.json();
-    } catch (error) {
-        console.error('Error loading buses:', error);
-        busesData = [];
-    }
-}
-*/
-
 const platformsStore = new PlatformsElements();
+//const busesStore = new BusesElements();
 export { PlatformsElements, platformsStore };

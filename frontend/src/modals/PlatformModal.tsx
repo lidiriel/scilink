@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Modal, TextInput, Textarea, Group, Button } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconDeviceFloppy } from "@tabler/icons-react";
-import "./platform.css";
+import "./PlatformModal.css";
 
 interface PlatformFormValues {
   id: string;
