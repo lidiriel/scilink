@@ -25,10 +25,10 @@ const App = () => {
         <AppShell.Main>
           <Routes>
             <Route path="/" element={<Navigate to="/devices" replace />} />
-            <Route path="/devices" element={<DevicesPage />} />
-            <Route path="/experiments" element={<ExperimentsPage />} />
-            <Route path="/workflows" element={<WorkflowsPage />} />
             <Route path="/monitor" element={<MonitorPage />} />
+            <Route path="/workflows" element={<WorkflowsPage />} />
+            <Route path="/experiments" element={<ExperimentsPage />} />
+            <Route path="/devices" element={<DevicesPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </AppShell.Main>
