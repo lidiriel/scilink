@@ -1,7 +1,6 @@
 // Data storage for website state, such as platforms and buses data
 // If need see https://mobx.js.org/README.html for state management
 import { makeAutoObservable } from "mobx"
-import { loadConnectionsDefinitions, connectionsDefinitions } from "./pieces";
 
 interface Settings {
     id: number; 
@@ -212,5 +211,4 @@ class PlatformsElements {
 
 }
 const platformsStore = new PlatformsElements();
-//const busesStore = new BusesElements();
 export { PlatformsElements, platformsStore };

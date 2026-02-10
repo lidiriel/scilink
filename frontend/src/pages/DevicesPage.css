@@ -1,0 +1,361 @@
+/* ============== Devices Page Layout ============== */
+.devices-page-layout {
+    display: flex;
+    gap: 1.5rem;
+    height: calc(100vh - 130px);
+}
+
+/* ============== Device Pieces Panel (Left) ============== */
+.device-pieces-panel {
+    width: 280px;
+    min-width: 280px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.device-pieces-panel .panel-header {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.device-pieces-panel .panel-header h3 {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.device-pieces-panel .panel-controls {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: #f9fafb;
+}
+
+.device-pieces-panel .panel-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+.device-pieces-panel .panel-empty {
+    text-align: center;
+    color: #9ca3af;
+    padding: 2rem 1rem;
+    font-size: 0.875rem;
+}
+
+.piece-category-header {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.5rem 0.25rem 0.25rem;
+    margin-top: 0.25rem;
+}
+
+.device-piece-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    margin: 0.25rem 0;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: grab;
+    transition: all 0.15s;
+    font-size: 0.8125rem;
+    color: #374151;
+    user-select: none;
+}
+
+.device-piece-item:hover {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.device-piece-item.dragging {
+    opacity: 0.5;
+}
+
+.device-piece-item.dragging-overlay {
+    background: #eff6ff;
+    border-color: #2563eb;
+    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.2);
+    cursor: grabbing;
+    opacity: 0.95;
+}
+
+.device-piece-item .piece-icon {
+    color: #6b7280;
+    flex-shrink: 0;
+}
+
+/* ============== Installed Devices Section (Right) ============== */
+.installed-devices-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.installed-devices-section .section-header {
+    margin-bottom: 1rem;
+}
+
+.installed-devices-section .section-header h2 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.installed-devices-section .section-header p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+/* ============== Devices Drop Zone ============== */
+.devices-drop-zone {
+    flex: 1;
+    background: #ffffff;
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    padding: 1rem;
+    position: relative;
+    overflow-y: auto;
+    min-height: 200px;
+    transition: all 0.2s;
+}
+
+.devices-drop-zone.drag-over {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.drop-hint {
+    display: flex;
+    position: absolute;
+    inset: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: #9ca3af;
+    font-size: 0.875rem;
+}
+
+/* ============== Devices Grid ============== */
+.devices-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+/* ============== Device Card ============== */
+.device-card {
+    border-left: 3px solid #9ca3af;
+    overflow: hidden;
+    transition: all 0.15s;
+}
+
+.device-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.device-card.mode-activate {
+    border-left-color: #22c55e;
+}
+
+.device-card.mode-deactivate {
+    border-left-color: #9ca3af;
+}
+
+.device-card.mode-simulate {
+    border-left-color: #f59e0b;
+}
+
+.device-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.75rem;
+    background: #f9fafb;
+}
+
+.device-card-header .device-card-label {
+    margin: 0;
+    flex: 1;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.device-card-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #eff6ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2563eb;
+    flex-shrink: 0;
+}
+
+.device-card-body {
+    padding: 0.375rem 0.75rem;
+}
+
+.device-card-piece {
+    margin: 0;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.device-card-bus {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.6875rem;
+    color: #3730a3;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.device-card-platform {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.6875rem;
+    color: #047857;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.device-card-dependency {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.6875rem;
+    color: #7c3aed;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.device-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    background: #f9fafb;
+}
+
+.device-card-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.device-card-btn {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    background: white;
+    color: #6b7280;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.device-card-btn:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: white;
+}
+
+.device-card-btn.delete:hover {
+    background: #fef2f2;
+    color: #ef4444;
+    border-color: #fecaca;
+}
+
+/* ============== Device Tags ============== */
+.device-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    min-height: 1.5rem;
+    align-items: center;
+}
+
+.device-tag {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #1e40af;
+    background: #dbeafe;
+    border-radius: 9999px;
+}
+
+.device-tag-empty {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    font-style: italic;
+}
+
+/* ============== Device Modal - Dependency Matches ============== */
+.dependency-matches-container {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.dependency-match-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.5rem;
+    background: #f9fafb;
+    border-radius: 4px;
+    font-size: 0.8125rem;
+}
+
+.dep-match-label {
+    font-weight: 500;
+    color: #374151;
+    min-width: 80px;
+}
+
+.dep-match-type {
+    font-size: 0.6875rem;
+    color: #9ca3af;
+    padding: 0.125rem 0.375rem;
+    background: #f3f4f6;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+.dep-match-arrow {
+    color: #9ca3af;
+}
