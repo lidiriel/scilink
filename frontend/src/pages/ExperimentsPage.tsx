@@ -4,7 +4,7 @@ import { IconFlask, IconPlus } from "@tabler/icons-react";
 import ExperimentCards from "../components/ExperimentCards";
 import ExperimentModal, { type ExperimentFormValues } from "../modals/ExperimentModal";
 import { experimentsStore } from "../behaviour/experiments";
-import "./ExperimentsPage.css";
+import "./ExperimentsPage.scss";
 
 const ExperimentsPage = () => {
     const [opened, { open, close }] = useDisclosure(false);

@@ -1,4 +1,4 @@
-@import "colors.scss";
+@import "../css/colors.scss";
 
 .workflows-page {
     display: flex;
@@ -44,6 +44,29 @@
     color: #9ca3af;
     font-size: 0.875rem;
     padding: 2rem 0.5rem;
+}
+
+.workflows-canvas-wrapper {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.workflows-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+    background: #ffffff;
+    flex-shrink: 0;
+}
+
+.workflows-toolbar-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1f2937;
 }
 
 .workflows-canvas {
