@@ -48,7 +48,13 @@ const FlowCanvas = observer(function FlowCanvas() {
 
     const onConnect: OnConnect = useCallback(
         (params) => {
-            workflowStore.setEdges(addEdge(params, toJS(workflowStore.edges)));
+            const edges = toJS(workflowStore.edges);
+            const duplicate = edges.some(
+                (e) => e.source === params.source && e.target === params.target
+            );
+            if (!duplicate) {
+                workflowStore.setEdges(addEdge(params, edges));
+            }
         },
         []
     );
@@ -113,6 +119,7 @@ const FlowCanvas = observer(function FlowCanvas() {
             onConnect={onConnect}
             onDragOver={onDragOver}
             onDrop={onDrop}
+            deleteKeyCode="Delete"
             fitView
         >
             <Controls />
