@@ -24,6 +24,13 @@
     flex-shrink: 0;
 }
 
+.workflows-sidebar .mantine-Tabs-tab[data-active] {
+    background: #eff6ff;
+    color: #2563eb;
+    font-weight: 600;
+    border-color: #2563eb;
+}
+
 .sidebar-panel {
     flex: 1;
     overflow-y: auto;
@@ -40,6 +47,68 @@
 .workflows-canvas {
     flex: 1;
     min-width: 0;
+}
+
+/* ============== Sidebar Block Items ============== */
+.sidebar-blocks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.sidebar-block-category {
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-block-category-header {
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #9ca3af;
+    padding: 0.25rem 0;
+    letter-spacing: 0.05em;
+}
+
+.sidebar-block-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: grab;
+    margin-bottom: 0.25rem;
+}
+
+.sidebar-block-item:active {
+    cursor: grabbing;
+}
+
+.sidebar-block-item:hover {
+    background: #eff6ff;
+    border-color: #2563eb;
+}
+
+.sidebar-block-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: #f3e8ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7c3aed;
+    flex-shrink: 0;
+}
+
+.sidebar-block-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* ============== Sidebar Device Items ============== */

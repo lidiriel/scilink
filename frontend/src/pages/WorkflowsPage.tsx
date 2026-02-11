@@ -3,6 +3,7 @@ import { Tabs } from "@mantine/core";
 import { IconPuzzle, IconCpu, IconSitemap } from "@tabler/icons-react";
 import { ReactFlowProvider } from "reactflow";
 import FlowCanvas from "../components/FlowCanvas";
+import SidebarBlocksList from "../components/SidebarBlocksList";
 import SidebarDevicesList from "../components/SidebarDevicesList";
 import "./WorkflowsPage.css";
 
@@ -26,7 +27,7 @@ const WorkflowsPage = () => {
                     </Tabs.List>
 
                     <Tabs.Panel value="blocks" className="sidebar-panel">
-                        <p className="sidebar-empty">Block pieces will appear here</p>
+                        <SidebarBlocksList />
                     </Tabs.Panel>
                     <Tabs.Panel value="devices" className="sidebar-panel">
                         <SidebarDevicesList />
