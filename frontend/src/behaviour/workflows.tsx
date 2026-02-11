@@ -227,6 +227,21 @@ class WorkflowStore {
         this.dirty = true;
     }
 
+    updateNodeData(nodeId: string, data: Record<string, any>): void {
+        this.nodes = this.nodes.map((node) => {
+            if (node.id !== nodeId) return node;
+            const existingNodeData = node.data.nodeData || {};
+            return {
+                ...node,
+                data: {
+                    ...node.data,
+                    nodeData: { ...existingNodeData, ...data },
+                },
+            };
+        });
+        this.dirty = true;
+    }
+
     setNodes(nodes: Node[]): void {
         this.nodes = nodes;
         this.dirty = true;

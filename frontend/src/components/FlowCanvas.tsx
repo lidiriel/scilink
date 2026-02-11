@@ -1,7 +1,10 @@
-import { useCallback, type DragEvent } from "react";
+import { useCallback, useState, type DragEvent } from "react";
 import ReactFlow, {
+    type Node,
+    type Edge,
     addEdge,
     Controls,
+    ControlButton,
     Background,
     BackgroundVariant,
     MarkerType,
@@ -14,12 +17,37 @@ import ReactFlow, {
     applyEdgeChanges,
 } from "reactflow";
 import "reactflow/dist/style.css";
+import dagre from "dagre";
 import { observer } from "mobx-react-lite";
 import { toJS } from "mobx";
 import { workflowStore } from "../behaviour/workflows";
+import { useDisclosure } from "@mantine/hooks";
+import { Tooltip } from "@mantine/core";
+import { IconLayoutDistributeHorizontal } from "@tabler/icons-react";
 import BlockNode from "./BlockNode";
 import WorkflowNode from "./WorkflowNode";
 import DeviceNode from "./DeviceNode";
+import NodeInputsModal from "../modals/NodeInputsModal";
+
+function autoLayout(nodes: Node[], edges: Edge[]): Node[] {
+    const g = new dagre.graphlib.Graph();
+    g.setDefaultEdgeLabel(() => ({}));
+    g.setGraph({ rankdir: "TB", nodesep: 50, ranksep: 80 });
+
+    nodes.forEach((node) => {
+        g.setNode(node.id, { width: 160, height: 40 });
+    });
+    edges.forEach((edge) => {
+        g.setEdge(edge.source, edge.target);
+    });
+
+    dagre.layout(g);
+
+    return nodes.map((node) => {
+        const pos = g.node(node.id);
+        return { ...node, position: { x: pos.x - 80, y: pos.y - 20 } };
+    });
+}
 
 const nodeTypes = { block: BlockNode, workflow: WorkflowNode, device: DeviceNode };
 
@@ -31,6 +59,22 @@ const defaultEdgeOptions: DefaultEdgeOptions = {
 
 const FlowCanvas = observer(function FlowCanvas() {
     const reactFlowInstance = useReactFlow();
+    const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+    const [modalOpened, { open: openModal, close: closeModal }] = useDisclosure(false);
+
+    const onNodeDoubleClick = useCallback((_event: React.MouseEvent, node: Node) => {
+        setSelectedNodeId(node.id);
+        openModal();
+    }, [openModal]);
+
+    const onAutoLayout = useCallback(() => {
+        const nodes = toJS(workflowStore.nodes);
+        const edges = toJS(workflowStore.edges);
+        if (nodes.length === 0) return;
+        const laid = autoLayout(nodes, edges);
+        workflowStore.setNodes(laid);
+        setTimeout(() => reactFlowInstance.fitView({ padding: 0.2 }), 50);
+    }, [reactFlowInstance]);
 
     const onNodesChange: OnNodesChange = useCallback(
         (changes) => {
@@ -108,7 +152,7 @@ const FlowCanvas = observer(function FlowCanvas() {
         [reactFlowInstance]
     );
 
-    return (
+    return (<>
         <ReactFlow
             nodes={toJS(workflowStore.nodes)}
             edges={toJS(workflowStore.edges)}
@@ -119,12 +163,21 @@ const FlowCanvas = observer(function FlowCanvas() {
             onConnect={onConnect}
             onDragOver={onDragOver}
             onDrop={onDrop}
+            onNodeDoubleClick={onNodeDoubleClick}
             deleteKeyCode="Delete"
             fitView
         >
-            <Controls />
+            <Controls>
+                <Tooltip label="Auto-layout" position="right" withArrow>
+                    <ControlButton onClick={onAutoLayout}>
+                        <IconLayoutDistributeHorizontal size={16} />
+                    </ControlButton>
+                </Tooltip>
+            </Controls>
             <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
         </ReactFlow>
+        <NodeInputsModal opened={modalOpened} onClose={closeModal} nodeId={selectedNodeId} />
+    </>
     );
 });
 
