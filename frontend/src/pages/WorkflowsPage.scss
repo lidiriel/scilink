@@ -28,9 +28,9 @@
 
 .workflows-sidebar .mantine-Tabs-tab[data-active] {
     background: #eff6ff;
-    color: #2563eb;
+    color: $active-btn-background;
     font-weight: 600;
-    border-color: #2563eb;
+    border-color: $active-btn-border;
 }
 
 .sidebar-panel {
@@ -88,8 +88,8 @@
 }
 
 .sidebar-block-item:hover {
-    background: #eff6ff;
-    border-color: #2563eb;
+    background: $element-background;
+    border-color: $element-border;
 }
 
 .sidebar-block-icon {
@@ -151,11 +151,11 @@
     width: 28px;
     height: 28px;
     border-radius: 6px;
-    background: #eff6ff;
+    background: $icon-background;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #2563eb;
+    color: $icon-color;
     flex-shrink: 0;
 }
 

@@ -1,3 +1,5 @@
+@import "../css/colors.scss";
+
 /* ============== Settings Page ============== */
 .settings-section {
     background: white;
@@ -19,7 +21,7 @@
 }
 
 .settings-section-title i {
-    color: #2563eb;
+    color: $title-color;
 }
 
 .settings-section-desc {
@@ -93,8 +95,8 @@
 }
 
 .settings-item-btn:hover {
-    background: #2563eb;
-    border-color: #2563eb;
+    background: $active-btn-background;
+    border-color: $active-btn-border;
     color: white;
 }
 
@@ -119,7 +121,7 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1rem;
-    background: #2563eb;
+    background: $active-btn-background;
     color: white;
     border: none;
     border-radius: 6px;
@@ -130,7 +132,7 @@
 }
 
 .settings-add-btn:hover {
-    background: #1d4ed8;
+    background: $active-btn-background;
 }
 
 .settings-empty {

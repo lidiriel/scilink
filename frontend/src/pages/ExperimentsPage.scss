@@ -1,3 +1,5 @@
+@import "../css/colors.scss";
+
 /* ============== Experiments List ============== */
 .experiments-list {
     display: flex;
@@ -114,7 +116,7 @@
 }
 
 .workflow-item-info:hover {
-    background: #2563eb;
+    background: $active-btn-background;
     color: white;
 }
 
@@ -148,7 +150,7 @@
 }
 
 .workflow-item-edit:hover {
-    background: #2563eb;
+    background: $active-btn-background;
     color: white;
 }
 
@@ -180,8 +182,8 @@
 
 .experiment-add-workflow-btn:hover {
     background: #eff6ff;
-    border-color: #2563eb;
-    color: #2563eb;
+    border-color: $active-btn-border;
+    color: $active-btn-background;
 }
 
 /* Reuse settings-item-btn styles */
