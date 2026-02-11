@@ -1,4 +1,4 @@
-@import colors.scss
+@import "../css/colors.scss";
 
 /* ============== Devices Page Layout ============== */
 .devices-page-layout {
@@ -93,8 +93,8 @@
 }
 
 .device-piece-item.dragging-overlay {
-    background: #eff6ff;
-    border-color: #2563eb;
+    background: $element-background;
+    border-color: $element-border;
     box-shadow: 0 8px 16px rgba(37, 99, 235, 0.2);
     cursor: grabbing;
     opacity: 0.95;
@@ -147,8 +147,8 @@
 }
 
 .devices-drop-zone.drag-over {
-    border-color: #2563eb;
-    background: #eff6ff;
+    border-color: $element-border;
+    background: $element-background;
 }
 
 .drop-hint {
@@ -182,15 +182,15 @@
 }
 
 .device-card.mode-activate {
-    border-left-color: #22c55e;
+    border-left-color: $device-on;
 }
 
 .device-card.mode-deactivate {
-    border-left-color: #9ca3af;
+    border-left-color: $device-off;
 }
 
 .device-card.mode-simulate {
-    border-left-color: #f59e0b;
+    border-left-color: $device-on;
 }
 
 .device-card-header {
@@ -216,11 +216,11 @@
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    background: #eff6ff;
+    background: $icon-background;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #2563eb;
+    color: $icon-color;
     flex-shrink: 0;
 }
 
@@ -289,8 +289,8 @@
 }
 
 .device-card-btn:hover {
-    background: #2563eb;
-    border-color: #2563eb;
+    background: $active-btn-background;
+    border-color: $active-btn-border;
     color: white;
 }
 

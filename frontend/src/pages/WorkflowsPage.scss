@@ -1,3 +1,5 @@
+@import "colors.scss";
+
 .workflows-page {
     display: flex;
     width: 100%;
@@ -134,15 +136,15 @@
 }
 
 .sidebar-device-item.mode-activate {
-    border-left: 3px solid #22c55e;
+    border-left: 3px solid $device-on;
 }
 
 .sidebar-device-item.mode-deactivate {
-    border-left: 3px solid #9ca3af;
+    border-left: 3px solid $device-off;
 }
 
 .sidebar-device-item.mode-simulate {
-    border-left: 3px solid #f59e0b;
+    border-left: 3px solid $device-simulate;
 }
 
 .sidebar-device-icon {
@@ -191,13 +193,13 @@
 }
 
 .sidebar-device-mode-icon.mode-activate {
-    color: #22c55e;
+    color: $device-on;
 }
 
 .sidebar-device-mode-icon.mode-deactivate {
-    color: #9ca3af;
+    color: $device-off;
 }
 
 .sidebar-device-mode-icon.mode-simulate {
-    color: #f59e0b;
+    color: $device-simulate;
 }
