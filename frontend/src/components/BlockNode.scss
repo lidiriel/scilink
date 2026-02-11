@@ -65,3 +65,20 @@
     color: #1f2937;
     white-space: nowrap;
 }
+
+.block-node .react-flow__handle {
+    width: 8px;
+    height: 8px;
+    background: #d1d5db;
+    border: 2px solid #ffffff;
+    transition: background 0.15s;
+
+    &:hover {
+        background: $active-btn-background;
+    }
+
+    &.react-flow__handle-left,
+    &.react-flow__handle-top {
+        background: #93c5fd;
+    }
+}

@@ -8,6 +8,8 @@ import {
     IconSitemap,
     IconChartBar,
 } from "@tabler/icons-react";
+import { observer } from "mobx-react-lite";
+import { workflowStore } from "../behaviour/workflows";
 
 const navItems = [
     { label: "nav.monitor", path: "/monitor", icon: IconChartBar },
@@ -17,7 +19,7 @@ const navItems = [
     { label: "nav.settings", path: "/settings", icon: IconSettings },
 ];
 
-const AppNavbar = () => {
+const AppNavbar = observer(function AppNavbar() {
     const { t } = useTranslation();
     const location = useLocation();
     const navigate = useNavigate();
@@ -26,13 +28,23 @@ const AppNavbar = () => {
         <Stack justify="flex-start" h="100%" align="center" pt="xs" gap={4}>
             {navItems.map((item) => {
                 const isActive = location.pathname.startsWith(item.path);
+                const isDisabled = item.path === "/workflows" && !workflowStore.currentWorkflowId;
                 return (
                     <Tooltip key={item.path} label={t(item.label)} position="right" withArrow>
                         <ActionIcon
                             variant={isActive ? "filled" : "subtle"}
                             color={isActive ? "blue" : "gray"}
                             size="lg"
-                            onClick={() => navigate(item.path)}
+                            disabled={isDisabled}
+                            onClick={() => {
+                                if (!isDisabled) {
+                                    navigate(
+                                        item.path === "/workflows" && workflowStore.currentWorkflowId
+                                            ? `/workflows/${workflowStore.currentWorkflowId}`
+                                            : item.path
+                                    );
+                                }
+                            }}
                         >
                             <item.icon size={20} />
                         </ActionIcon>
@@ -41,6 +53,6 @@ const AppNavbar = () => {
             })}
         </Stack>
     );
-};
+});
 
 export default AppNavbar;

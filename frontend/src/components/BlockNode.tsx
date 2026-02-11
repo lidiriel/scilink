@@ -24,8 +24,10 @@ const BlockNode = memo(function BlockNode({ id, data }: NodeProps) {
                 <Icon size={14} />
             </div>
             <span className="block-node-label">{data.label}</span>
-            <Handle type="target" position={Position.Top} />
-            <Handle type="source" position={Position.Bottom} />
+            <Handle type="target" position={Position.Top} id="target-top" />
+            <Handle type="target" position={Position.Left} id="target-left" />
+            <Handle type="source" position={Position.Bottom} id="source-bottom" />
+            <Handle type="source" position={Position.Right} id="source-right" />
         </div>
     );
 });
