@@ -25,7 +25,7 @@ interface ApiEdge {
 function apiNodeToReactFlow(apiNode: ApiNode): Node {
     return {
         id: apiNode.id,
-        type: "default",
+        type: apiNode.pieceName ? "block" : apiNode.type || "default",
         position: { x: apiNode.x, y: apiNode.y },
         data: {
             label: apiNode.label,
@@ -42,7 +42,7 @@ function reactFlowNodeToApi(node: Node): ApiNode {
     const d = node.data || {};
     return {
         id: node.id,
-        type: node.type || "default",
+        type: node.type === "block" ? "default" : (node.type || "default"),
         label: d.label || node.id,
         x: Math.round(node.position.x),
         y: Math.round(node.position.y),
@@ -166,7 +166,7 @@ class WorkflowStore {
         const nodeId = this.generateNodeId();
         const newNode: Node = {
             id: nodeId,
-            type: "default",
+            type: "block",
             position,
             data: {
                 label: piece.node_label,

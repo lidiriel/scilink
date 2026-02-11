@@ -14,6 +14,9 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import { observer } from "mobx-react-lite";
 import { workflowStore } from "../behaviour/workflows";
+import BlockNode from "./BlockNode";
+
+const nodeTypes = { block: BlockNode };
 
 const FlowCanvas = observer(function FlowCanvas() {
     const reactFlowInstance = useReactFlow();
@@ -69,6 +72,7 @@ const FlowCanvas = observer(function FlowCanvas() {
         <ReactFlow
             nodes={workflowStore.nodes}
             edges={workflowStore.edges}
+            nodeTypes={nodeTypes}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
