@@ -41,3 +41,94 @@
     flex: 1;
     min-width: 0;
 }
+
+/* ============== Sidebar Device Items ============== */
+.sidebar-devices-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.sidebar-device-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: grab;
+}
+
+.sidebar-device-item:active {
+    cursor: grabbing;
+}
+
+.sidebar-device-item.mode-activate {
+    border-left: 3px solid #22c55e;
+}
+
+.sidebar-device-item.mode-deactivate {
+    border-left: 3px solid #9ca3af;
+}
+
+.sidebar-device-item.mode-simulate {
+    border-left: 3px solid #f59e0b;
+}
+
+.sidebar-device-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: #eff6ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2563eb;
+    flex-shrink: 0;
+}
+
+.sidebar-device-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-device-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-device-type {
+    font-size: 0.625rem;
+    color: #6b7280;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-device-mode-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sidebar-device-mode-icon.mode-activate {
+    color: #22c55e;
+}
+
+.sidebar-device-mode-icon.mode-deactivate {
+    color: #9ca3af;
+}
+
+.sidebar-device-mode-icon.mode-simulate {
+    color: #f59e0b;
+}
