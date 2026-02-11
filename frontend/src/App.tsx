@@ -27,6 +27,7 @@ const App = () => {
             <Route path="/" element={<Navigate to="/devices" replace />} />
             <Route path="/monitor" element={<MonitorPage />} />
             <Route path="/workflows" element={<WorkflowsPage />} />
+            <Route path="/workflows/:workflowId" element={<WorkflowsPage />} />
             <Route path="/experiments" element={<ExperimentsPage />} />
             <Route path="/devices" element={<DevicesPage />} />
             <Route path="/settings" element={<SettingsPage />} />
