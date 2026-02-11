@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDisclosure } from "@mantine/hooks";
 import {
     IconPencil,
@@ -8,12 +9,14 @@ import {
     IconCheck,
     IconPointer,
     IconSitemap,
+    IconArrowRight,
 } from "@tabler/icons-react";
 import { observer } from "mobx-react-lite";
 import { experimentsStore, type ExperimentData } from "../behaviour/experiments";
 import ExperimentModal, { type ExperimentFormValues } from "../modals/ExperimentModal";
 
 const ExperimentCards = observer(function ExperimentCards() {
+    const navigate = useNavigate();
     const [opened, { open, close }] = useDisclosure(false);
     const [editValues, setEditValues] = useState<Partial<ExperimentFormValues> | undefined>(undefined);
 
@@ -131,7 +134,17 @@ const ExperimentCards = observer(function ExperimentCards() {
                                                         </button>
                                                         <button
                                                             className="workflow-item-edit"
-                                                            title="Edit workflow name"
+                                                            title="Open in editor"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                navigate(`/workflows/${wf.id}`);
+                                                            }}
+                                                        >
+                                                            <IconArrowRight size={12} />
+                                                        </button>
+                                                        <button
+                                                            className="workflow-item-edit"
+                                                            title="Rename workflow"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 handleRenameWorkflow(wf.id, wf.name);

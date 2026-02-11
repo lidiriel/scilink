@@ -7,7 +7,7 @@ import DevicePiecesPanel from "../components/DevicePiecesPanel";
 import DevicesGrid from "../components/DevicesGrid";
 import DeviceModal from "../modals/DeviceModal";
 import { type DevicePiece, type DeviceData } from "../behaviour/devices";
-import "./DevicesPage.css";
+import "./DevicesPage.scss";
 
 const DevicesPage = observer(function DevicesPage() {
     const [opened, { open, close }] = useDisclosure(false);

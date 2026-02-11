@@ -3,7 +3,7 @@ import { IconServer, IconChevronRight, IconPencil, IconTrash } from '@tabler/ico
 import { observer } from "mobx-react-lite";
 import { useDisclosure } from '@mantine/hooks';
 import PlatformModal from "../modals/PlatformModal";
-import "./PlatformCards.css";
+import "./PlatformCards.scss";
 import { platformsStore } from "../behaviour/settings";
 import PlatformBuses from './PlatformBuses';
 

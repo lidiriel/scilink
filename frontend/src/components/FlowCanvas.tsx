@@ -1,46 +1,85 @@
+import { useCallback, type DragEvent } from "react";
 import ReactFlow, {
-    useNodesState,
-    useEdgesState,
     addEdge,
     Controls,
     Background,
     BackgroundVariant,
-    type Edge,
-    type Node,
+    useReactFlow,
+    type OnNodesChange,
+    type OnEdgesChange,
     type OnConnect,
+    applyNodeChanges,
+    applyEdgeChanges,
 } from "reactflow";
 import "reactflow/dist/style.css";
+import { observer } from "mobx-react-lite";
+import { workflowStore } from "../behaviour/workflows";
 
-const initialNodes: Node[] = [
-    {
-        id: "1",
-        position: { x: 100, y: 100 },
-        data: { label: "Hello React Flow" },
-    },
-];
+const FlowCanvas = observer(function FlowCanvas() {
+    const reactFlowInstance = useReactFlow();
 
-const initialEdges: Edge[] = [];
+    const onNodesChange: OnNodesChange = useCallback(
+        (changes) => {
+            workflowStore.setNodes(applyNodeChanges(changes, workflowStore.nodes));
+        },
+        []
+    );
 
-function FlowCanvas() {
-    const [nodes, , onNodesChange] = useNodesState(initialNodes);
-    const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+    const onEdgesChange: OnEdgesChange = useCallback(
+        (changes) => {
+            workflowStore.setEdges(applyEdgeChanges(changes, workflowStore.edges));
+        },
+        []
+    );
 
-    const onConnect: OnConnect = (params) =>
-        setEdges((eds) => addEdge(params, eds));
+    const onConnect: OnConnect = useCallback(
+        (params) => {
+            workflowStore.setEdges(addEdge(params, workflowStore.edges));
+        },
+        []
+    );
+
+    const onDragOver = useCallback((event: DragEvent) => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "copy";
+    }, []);
+
+    const onDrop = useCallback(
+        (event: DragEvent) => {
+            event.preventDefault();
+
+            const blockData = event.dataTransfer.getData("application/scilink-block");
+            if (!blockData) return;
+
+            try {
+                const piece = JSON.parse(blockData);
+                const position = reactFlowInstance.screenToFlowPosition({
+                    x: event.clientX,
+                    y: event.clientY,
+                });
+                workflowStore.addBlockNode(piece, position);
+            } catch (error) {
+                console.error("Error handling block drop:", error);
+            }
+        },
+        [reactFlowInstance]
+    );
 
     return (
         <ReactFlow
-            nodes={nodes}
-            edges={edges}
+            nodes={workflowStore.nodes}
+            edges={workflowStore.edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
+            onDragOver={onDragOver}
+            onDrop={onDrop}
             fitView
         >
             <Controls />
             <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
         </ReactFlow>
     );
-}
+});
 
 export default FlowCanvas;

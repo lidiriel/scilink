@@ -6,7 +6,7 @@ import LanguageSelector from "../components/LanguageSelector";
 import PlatformModal from "../modals/PlatformModal";
 import PlatformCards from "../components/PlatformCards";
 import { platformsStore } from "../behaviour/settings";
-import "./SettingsPage.css";
+import "./SettingsPage.scss";
 
 const SettingsPage = () => {
     const [activeTab, setActiveTab] = useState<string | null>("platforms");
