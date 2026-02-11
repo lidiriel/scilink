@@ -18,8 +18,10 @@ import { observer } from "mobx-react-lite";
 import { toJS } from "mobx";
 import { workflowStore } from "../behaviour/workflows";
 import BlockNode from "./BlockNode";
+import WorkflowNode from "./WorkflowNode";
+import DeviceNode from "./DeviceNode";
 
-const nodeTypes = { block: BlockNode };
+const nodeTypes = { block: BlockNode, workflow: WorkflowNode, device: DeviceNode };
 
 const defaultEdgeOptions: DefaultEdgeOptions = {
     animated: true,
@@ -60,18 +62,41 @@ const FlowCanvas = observer(function FlowCanvas() {
         (event: DragEvent) => {
             event.preventDefault();
 
-            const blockData = event.dataTransfer.getData("application/scilink-block");
-            if (!blockData) return;
+            const position = reactFlowInstance.screenToFlowPosition({
+                x: event.clientX,
+                y: event.clientY,
+            });
 
-            try {
-                const piece = JSON.parse(blockData);
-                const position = reactFlowInstance.screenToFlowPosition({
-                    x: event.clientX,
-                    y: event.clientY,
-                });
-                workflowStore.addBlockNode(piece, position);
-            } catch (error) {
-                console.error("Error handling block drop:", error);
+            const blockData = event.dataTransfer.getData("application/scilink-block");
+            if (blockData) {
+                try {
+                    const piece = JSON.parse(blockData);
+                    workflowStore.addBlockNode(piece, position);
+                } catch (error) {
+                    console.error("Error handling block drop:", error);
+                }
+                return;
+            }
+
+            const workflowData = event.dataTransfer.getData("application/scilink-workflow");
+            if (workflowData) {
+                try {
+                    const workflow = JSON.parse(workflowData);
+                    workflowStore.addWorkflowNode(workflow, position);
+                } catch (error) {
+                    console.error("Error handling workflow drop:", error);
+                }
+                return;
+            }
+
+            const deviceData = event.dataTransfer.getData("application/scilink-device");
+            if (deviceData) {
+                try {
+                    const device = JSON.parse(deviceData);
+                    workflowStore.addDeviceNode(device, position);
+                } catch (error) {
+                    console.error("Error handling device drop:", error);
+                }
             }
         },
         [reactFlowInstance]

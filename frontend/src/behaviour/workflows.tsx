@@ -23,9 +23,14 @@ interface ApiEdge {
 }
 
 function apiNodeToReactFlow(apiNode: ApiNode): Node {
+    let type = apiNode.type || "default";
+    if (apiNode.pieceName) type = "block";
+    if (apiNode.data?.workflowRef) type = "workflow";
+    if (apiNode.data?.deviceRef) type = "device";
+
     return {
         id: apiNode.id,
-        type: apiNode.pieceName ? "block" : apiNode.type || "default",
+        type,
         position: { x: apiNode.x, y: apiNode.y },
         data: {
             label: apiNode.label,
@@ -33,6 +38,9 @@ function apiNodeToReactFlow(apiNode: ApiNode): Node {
             pieceDirectory: apiNode.pieceDirectory,
             pieceHash: apiNode.pieceHash,
             iconClass: apiNode.iconClass,
+            workflowRef: apiNode.data?.workflowRef,
+            deviceRef: apiNode.data?.deviceRef,
+            tags: apiNode.data?.tags,
             nodeData: apiNode.data,
         },
     };
@@ -40,9 +48,13 @@ function apiNodeToReactFlow(apiNode: ApiNode): Node {
 
 function reactFlowNodeToApi(node: Node): ApiNode {
     const d = node.data || {};
+    const nodeData = { ...d.nodeData };
+    if (d.workflowRef) nodeData.workflowRef = d.workflowRef;
+    if (d.deviceRef) { nodeData.deviceRef = d.deviceRef; nodeData.tags = d.tags; }
+
     return {
         id: node.id,
-        type: node.type === "block" ? "default" : (node.type || "default"),
+        type: ["block", "workflow", "device"].includes(node.type || "") ? "default" : (node.type || "default"),
         label: d.label || node.id,
         x: Math.round(node.position.x),
         y: Math.round(node.position.y),
@@ -50,7 +62,7 @@ function reactFlowNodeToApi(node: Node): ApiNode {
         pieceDirectory: d.pieceDirectory,
         pieceHash: d.pieceHash,
         iconClass: d.iconClass,
-        data: d.nodeData,
+        data: nodeData,
     };
 }
 
@@ -174,6 +186,41 @@ class WorkflowStore {
                 pieceDirectory: piecesStore.currentDirectory,
                 pieceHash: piece.git_hash,
                 iconClass: piece.icon_class_name,
+            },
+        };
+        this.nodes = [...this.nodes, newNode];
+        this.dirty = true;
+    }
+
+    addWorkflowNode(workflow: { id: string; name: string }, position: { x: number; y: number }): void {
+        const nodeId = this.generateNodeId();
+        const newNode: Node = {
+            id: nodeId,
+            type: "workflow",
+            position,
+            data: {
+                label: workflow.name,
+                workflowRef: workflow.id,
+            },
+        };
+        this.nodes = [...this.nodes, newNode];
+        this.dirty = true;
+    }
+
+    addDeviceNode(
+        device: { id: number; label: string; piece_name: string; tags?: string[] },
+        position: { x: number; y: number }
+    ): void {
+        const nodeId = this.generateNodeId();
+        const newNode: Node = {
+            id: nodeId,
+            type: "device",
+            position,
+            data: {
+                label: device.label,
+                deviceRef: device.id,
+                pieceName: device.piece_name,
+                tags: device.tags,
             },
         };
         this.nodes = [...this.nodes, newNode];

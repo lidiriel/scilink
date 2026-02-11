@@ -1,6 +1,6 @@
 @use "../css/colors.scss" as colors;
 
-.block-node {
+.workflow-node {
     position: relative;
     display: flex;
     align-items: center;
@@ -13,16 +13,16 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 
     &:hover {
-        border-color: colors.$active-btn-border;
-        box-shadow: 0 1px 4px rgba(37, 99, 235, 0.15);
+        border-color: #0284c7;
+        box-shadow: 0 1px 4px rgba(2, 132, 199, 0.15);
     }
 
-    &:hover .block-node-delete {
+    &:hover .workflow-node-delete {
         opacity: 1;
     }
 }
 
-.block-node-delete {
+.workflow-node-delete {
     position: absolute;
     top: -8px;
     left: -8px;
@@ -47,26 +47,26 @@
     }
 }
 
-.block-node-icon {
+.workflow-node-icon {
     width: 24px;
     height: 24px;
     border-radius: 6px;
-    background: #f3e8ff;
+    background: #e0f2fe;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #7c3aed;
+    color: #0284c7;
     flex-shrink: 0;
 }
 
-.block-node-label {
+.workflow-node-label {
     font-size: 0.75rem;
     font-weight: 600;
     color: #1f2937;
     white-space: nowrap;
 }
 
-.block-node .react-flow__handle {
+.workflow-node .react-flow__handle {
     width: 8px;
     height: 8px;
     background: #d1d5db;
@@ -74,11 +74,11 @@
     transition: background 0.15s;
 
     &:hover {
-        background: colors.$active-btn-background;
+        background: #0284c7;
     }
 
     &.react-flow__handle-left,
     &.react-flow__handle-top {
-        background: #93c5fd;
+        background: #7dd3fc;
     }
 }

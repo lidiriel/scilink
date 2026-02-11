@@ -1,4 +1,4 @@
-@import "../css/colors.scss";
+@use "../css/colors.scss" as colors;
 
 .workflows-page {
     display: flex;
@@ -28,9 +28,9 @@
 
 .workflows-sidebar .mantine-Tabs-tab[data-active] {
     background: #eff6ff;
-    color: $active-btn-background;
+    color: colors.$active-btn-background;
     font-weight: 600;
-    border-color: $active-btn-border;
+    border-color: colors.$active-btn-border;
 }
 
 .sidebar-panel {
@@ -140,8 +140,8 @@
 }
 
 .sidebar-block-item:hover {
-    background: $element-background;
-    border-color: $element-border;
+    background: colors.$element-background;
+    border-color: colors.$element-border;
 }
 
 .sidebar-block-icon {
@@ -188,26 +188,26 @@
 }
 
 .sidebar-device-item.mode-activate {
-    border-left: 3px solid $device-on;
+    border-left: 3px solid colors.$device-on;
 }
 
 .sidebar-device-item.mode-deactivate {
-    border-left: 3px solid $device-off;
+    border-left: 3px solid colors.$device-off;
 }
 
 .sidebar-device-item.mode-simulate {
-    border-left: 3px solid $device-simulate;
+    border-left: 3px solid colors.$device-simulate;
 }
 
 .sidebar-device-icon {
     width: 28px;
     height: 28px;
     border-radius: 6px;
-    background: $icon-background;
+    background: colors.$icon-background;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: $icon-color;
+    color: colors.$icon-color;
     flex-shrink: 0;
 }
 
@@ -245,13 +245,62 @@
 }
 
 .sidebar-device-mode-icon.mode-activate {
-    color: $device-on;
+    color: colors.$device-on;
 }
 
 .sidebar-device-mode-icon.mode-deactivate {
-    color: $device-off;
+    color: colors.$device-off;
 }
 
 .sidebar-device-mode-icon.mode-simulate {
-    color: $device-simulate;
+    color: colors.$device-simulate;
+}
+
+/* ============== Sidebar Workflow Items ============== */
+.sidebar-workflows-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.sidebar-workflow-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: grab;
+    transition: all 0.15s;
+}
+
+.sidebar-workflow-item:active {
+    cursor: grabbing;
+}
+
+.sidebar-workflow-item:hover {
+    background: colors.$element-background;
+    border-color: colors.$element-border;
+}
+
+.sidebar-workflow-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: #e0f2fe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0284c7;
+    flex-shrink: 0;
+}
+
+.sidebar-workflow-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

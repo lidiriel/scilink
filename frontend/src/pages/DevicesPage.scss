@@ -1,4 +1,4 @@
-@import "../css/colors.scss";
+@use "../css/colors.scss" as colors;
 
 /* ============== Devices Page Layout ============== */
 .devices-page-layout {
@@ -93,8 +93,8 @@
 }
 
 .device-piece-item.dragging-overlay {
-    background: $element-background;
-    border-color: $element-border;
+    background: colors.$element-background;
+    border-color: colors.$element-border;
     box-shadow: 0 8px 16px rgba(37, 99, 235, 0.2);
     cursor: grabbing;
     opacity: 0.95;
@@ -147,8 +147,8 @@
 }
 
 .devices-drop-zone.drag-over {
-    border-color: $element-border;
-    background: $element-background;
+    border-color: colors.$element-border;
+    background: colors.$element-background;
 }
 
 .drop-hint {
@@ -182,15 +182,15 @@
 }
 
 .device-card.mode-activate {
-    border-left-color: $device-on;
+    border-left-color: colors.$device-on;
 }
 
 .device-card.mode-deactivate {
-    border-left-color: $device-off;
+    border-left-color: colors.$device-off;
 }
 
 .device-card.mode-simulate {
-    border-left-color: $device-on;
+    border-left-color: colors.$device-on;
 }
 
 .device-card-header {
@@ -216,11 +216,11 @@
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    background: $icon-background;
+    background: colors.$icon-background;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: $icon-color;
+    color: colors.$icon-color;
     flex-shrink: 0;
 }
 
@@ -289,8 +289,8 @@
 }
 
 .device-card-btn:hover {
-    background: $active-btn-background;
-    border-color: $active-btn-border;
+    background: colors.$active-btn-background;
+    border-color: colors.$active-btn-border;
     color: white;
 }
 

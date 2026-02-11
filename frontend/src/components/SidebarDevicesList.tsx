@@ -33,6 +33,18 @@ const SidebarDevicesList = observer(function SidebarDevicesList() {
                         key={device.id}
                         className={`sidebar-device-item ${getModeClass(deviceMode)}`}
                         draggable
+                        onDragStart={(e) => {
+                            e.dataTransfer.setData(
+                                "application/scilink-device",
+                                JSON.stringify({
+                                    id: device.id,
+                                    label: device.label,
+                                    piece_name: device.piece_name,
+                                    tags: device.data?.tags,
+                                })
+                            );
+                            e.dataTransfer.effectAllowed = "copy";
+                        }}
                     >
                         <div className="sidebar-device-icon">
                             {(() => { const Icon = getDeviceIcon(device.data?.tags); return <Icon size={14} />; })()}

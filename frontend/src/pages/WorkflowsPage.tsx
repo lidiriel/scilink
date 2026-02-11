@@ -7,6 +7,7 @@ import { observer } from "mobx-react-lite";
 import FlowCanvas from "../components/FlowCanvas";
 import SidebarBlocksList from "../components/SidebarBlocksList";
 import SidebarDevicesList from "../components/SidebarDevicesList";
+import SidebarWorkflowsList from "../components/SidebarWorkflowsList";
 import { workflowStore } from "../behaviour/workflows";
 import { experimentsStore } from "../behaviour/experiments";
 import "./WorkflowsPage.scss";
@@ -54,7 +55,7 @@ const WorkflowsPage = observer(() => {
                         <SidebarDevicesList />
                     </Tabs.Panel>
                     <Tabs.Panel value="workflows" className="sidebar-panel">
-                        <p className="sidebar-empty">Sub-workflows will appear here</p>
+                        <SidebarWorkflowsList />
                     </Tabs.Panel>
                 </Tabs>
             </div>
