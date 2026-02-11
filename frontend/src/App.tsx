@@ -15,7 +15,7 @@ import SettingsPage from "./pages/SettingsPage";
 const App = () => {
   return (
     <MantineProvider>
-      <AppShell header={{ height: 56 }} navbar={{ width: 220, breakpoint: "sm" }} padding="md">
+      <AppShell header={{ height: 56 }} navbar={{ width: 60, breakpoint: "sm" }} padding="md">
         <AppShell.Header>
           <Header />
         </AppShell.Header>
