@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { TextInput, Select } from "@mantine/core";
-import { IconSearch, IconPuzzle, IconCpu } from "@tabler/icons-react";
+import { IconSearch, IconPuzzle } from "@tabler/icons-react";
 import { useDraggable } from "@dnd-kit/core";
 import { observer } from "mobx-react-lite";
 import { devicesStore, type DevicePiece } from "../behaviour/devices";
+import { getDeviceIcon } from "../utils/deviceIcons";
 
 function DraggablePieceItem({ piece }: { piece: DevicePiece }) {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -18,7 +19,7 @@ function DraggablePieceItem({ piece }: { piece: DevicePiece }) {
             {...listeners}
             {...attributes}
         >
-            <IconCpu size={14} className="piece-icon" />
+            {(() => { const Icon = getDeviceIcon(piece.tags); return <Icon size={14} className="piece-icon" />; })()}
             <span>{piece.node_label || piece.name}</span>
         </div>
     );

@@ -202,6 +202,40 @@ Double-clicking a workflow node opens a settings modal. Fields are rendered base
 |--------|---------------|--------------|
 | `GET`  | `/api/health` | Health check |
 
+## Development
+
+### Frontend
+
+The React frontend lives in `frontend/` and uses:
+
+- **React 19** + TypeScript + Vite
+- **Mantine 8** for UI components (Tabs, Card, Modal, SegmentedControl, AppShell, etc.)
+- **MobX** for state management (stores in `frontend/src/behaviour/`)
+- **React Flow** for the workflow canvas
+- **@dnd-kit/core** for drag-and-drop (device piece installation)
+- **@tabler/icons-react** for all icons
+- **react-i18next** for internationalization
+
+### Device Tag-to-Icon Mapping
+
+Device icons in the UI are determined by the `tags` array from each piece's `metadata.json`. The mapping is defined in `frontend/src/utils/deviceIcons.ts` and used across device cards, the pieces panel, and the workflow sidebar.
+
+| Tag             | Icon              | Example devices                    |
+|-----------------|-------------------|------------------------------------|
+| `sensors`       | IconTemperature   | TempSensor, SpectrometerOcean      |
+| `actuator`      | IconEngine        | Pump, Filterwheel                  |
+| `relays`        | IconBolt          | Relay                              |
+| `fluidics`      | IconDroplet       | PinchValve, 4In1ComValve           |
+| `camera`        | IconCamera        |                                    |
+| `light`         | IconBulb          |                                    |
+| `communication` | IconAntenna       |                                    |
+| `gauge`         | IconGauge         |                                    |
+| *(fallback)*    | IconCpu           | Any device without a matched tag   |
+
+When a device has multiple tags (e.g. PinchValve has `["hardware", "actuator", "fluidics"]`), the most specific tag wins. The priority order is: `fluidics > camera > light > communication > gauge > sensors > actuator > relays`. The generic `hardware` tag is always ignored.
+
+To add a new icon mapping, update `TAG_ICON_MAP` and `TAG_PRIORITY` in `frontend/src/utils/deviceIcons.ts`.
+
 ## Setup
 
 See [SETUP.md](SETUP.md) for installation, Docker configuration, and database management.

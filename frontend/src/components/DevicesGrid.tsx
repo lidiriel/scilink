@@ -3,6 +3,7 @@ import { IconPencil, IconTrash, IconCpu, IconLink, IconServer, IconArrowMoveRigh
 import { useDroppable } from "@dnd-kit/core";
 import { observer } from "mobx-react-lite";
 import { devicesStore, type DeviceData } from "../behaviour/devices";
+import { getDeviceIcon } from "../utils/deviceIcons";
 
 interface DevicesGridProps {
     onEdit: (device: DeviceData) => void;
@@ -59,7 +60,7 @@ const DevicesGrid = observer(function DevicesGrid({ onEdit }: DevicesGridProps) 
                         >
                             <div className="device-card-header">
                                 <div className="device-card-icon">
-                                    <IconCpu size={16} />
+                                    {(() => { const Icon = getDeviceIcon(device.data?.tags); return <Icon size={16} />; })()}
                                 </div>
                                 <h4 className="device-card-label">{device.label}</h4>
                             </div>
