@@ -40,6 +40,17 @@ const WorkflowsPage = observer(() => {
           )
         : null;
 
+    // Build workflow hierarchy chain (root → ... → parent → current)
+    const workflowChain: { id: string; name: string }[] = [];
+    if (parentExperiment && workflowStore.currentWorkflowId) {
+        const wfMap = new Map(parentExperiment.workflows.map((wf) => [wf.id, wf]));
+        let current = wfMap.get(workflowStore.currentWorkflowId);
+        while (current) {
+            workflowChain.unshift({ id: current.id, name: current.name });
+            current = current.parentId ? wfMap.get(current.parentId) : undefined;
+        }
+    }
+
     // Compute area validity: boundary-crossing connectors + name uniqueness
     // No useMemo — observer ensures re-render on MobX edge changes
     // Rule: all input-crossing edges must arrive at the SAME internal connector (node+handle),
@@ -98,7 +109,7 @@ const WorkflowsPage = observer(() => {
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: trimmedName }),
+                body: JSON.stringify({ name: trimmedName, parentId: workflowStore.currentWorkflowId }),
             }
         );
         if (!createRes.ok) {
@@ -216,6 +227,11 @@ const WorkflowsPage = observer(() => {
                                     {parentExperiment.name}
                                 </Anchor>
                             )}
+                            {workflowChain.slice(0, -1).map((wf) => (
+                                <Anchor key={wf.id} size="sm" onClick={() => navigate(`/workflows/${wf.id}`)}>
+                                    {wf.name}
+                                </Anchor>
+                            ))}
                             <span className="workflows-breadcrumb-current">
                                 {workflowStore.workflowName}
                             </span>
