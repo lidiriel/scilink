@@ -24,6 +24,7 @@ interface UserInputField {
     maximum?: number;
     placeholder?: string;
     help?: string;
+    visible?: boolean;
 }
 
 type UserInputsDef = Record<string, UserInputField>;
@@ -91,10 +92,20 @@ const NodeInputsModal = ({ opened, onClose, nodeId }: NodeInputsModalProps) => {
             if (def) {
                 const existing = node.data.nodeData?.user_inputs || {};
                 const initial: Record<string, any> = {};
+                const visibleFields: string[] = [];
                 for (const [key, field] of Object.entries(def)) {
                     initial[key] = existing[key] ?? field.default ?? "";
+                    if (field.visible) visibleFields.push(key);
                 }
                 setValues(initial);
+
+                // Store visible fields + defaults so node can display them immediately
+                if (visibleFields.length > 0 && nodeId) {
+                    workflowStore.updateNodeData(nodeId, {
+                        user_inputs: { ...initial, ...existing },
+                        visible_fields: visibleFields,
+                    });
+                }
             }
 
             setLoading(false);
@@ -131,7 +142,15 @@ const NodeInputsModal = ({ opened, onClose, nodeId }: NodeInputsModalProps) => {
             }
         }
 
-        workflowStore.updateNodeData(nodeId, { user_inputs: typed });
+        // Collect visible field keys
+        const visibleFields: string[] = [];
+        if (userInputsDef) {
+            for (const [key, field] of Object.entries(userInputsDef)) {
+                if (field.visible) visibleFields.push(key);
+            }
+        }
+
+        workflowStore.updateNodeData(nodeId, { user_inputs: typed, visible_fields: visibleFields });
         onClose();
     };
 

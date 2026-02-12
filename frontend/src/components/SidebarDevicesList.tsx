@@ -1,7 +1,10 @@
+import { useState } from "react";
+import { TextInput } from "@mantine/core";
 import {
     IconPlugConnected,
     IconPlugConnectedX,
     IconWaveSine,
+    IconSearch,
 } from "@tabler/icons-react";
 import { observer } from "mobx-react-lite";
 import { devicesStore } from "../behaviour/devices";
@@ -18,15 +21,33 @@ function ModeIcon({ mode }: { mode: string }) {
 }
 
 const SidebarDevicesList = observer(function SidebarDevicesList() {
-    const devices = devicesStore.devices;
+    const [searchFilter, setSearchFilter] = useState("");
 
-    if (devices.length === 0) {
-        return <p className="sidebar-empty">No devices installed</p>;
-    }
+    const filterLower = searchFilter.toLowerCase().trim();
+    const filtered = filterLower
+        ? devicesStore.devices.filter(
+              (d) =>
+                  d.label.toLowerCase().includes(filterLower) ||
+                  d.piece_name.toLowerCase().includes(filterLower) ||
+                  d.data?.tags?.some((t) => t.toLowerCase().includes(filterLower))
+          )
+        : devicesStore.devices;
 
     return (
         <div className="sidebar-devices-list">
-            {devices.map((device) => {
+            <TextInput
+                size="xs"
+                placeholder="Search devices..."
+                leftSection={<IconSearch size={14} />}
+                value={searchFilter}
+                onChange={(e) => setSearchFilter(e.currentTarget.value)}
+                mb="xs"
+            />
+            {filtered.length === 0 ? (
+                <p className="sidebar-empty">
+                    {devicesStore.devices.length === 0 ? "No devices installed" : "No devices found"}
+                </p>
+            ) : filtered.map((device) => {
                 const deviceMode = device.mode || "deactivate";
                 return (
                     <div
@@ -62,5 +83,6 @@ const SidebarDevicesList = observer(function SidebarDevicesList() {
         </div>
     );
 });
+
 
 export default SidebarDevicesList;

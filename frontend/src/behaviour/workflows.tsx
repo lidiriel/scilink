@@ -68,7 +68,7 @@ function reactFlowNodeToApi(node: Node): ApiNode {
 
 function apiEdgeToReactFlow(apiEdge: ApiEdge): Edge {
     return {
-        id: apiEdge.id,
+        id: apiEdge.id || `e-${apiEdge.from}-${apiEdge.to}`,
         source: apiEdge.from,
         target: apiEdge.to,
         animated: apiEdge.animated !== false,

@@ -1,8 +1,9 @@
-import { useCallback, useState, type DragEvent } from "react";
+import { useCallback, useState, useEffect, useRef, type DragEvent } from "react";
 import ReactFlow, {
     type Node,
     type Edge,
     addEdge,
+    reconnectEdge,
     Controls,
     ControlButton,
     Background,
@@ -15,11 +16,11 @@ import ReactFlow, {
     type DefaultEdgeOptions,
     applyNodeChanges,
     applyEdgeChanges,
+    type Connection,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import dagre from "dagre";
-import { observer } from "mobx-react-lite";
-import { toJS } from "mobx";
+import { toJS, runInAction, autorun } from "mobx";
 import { workflowStore } from "../behaviour/workflows";
 import { useDisclosure } from "@mantine/hooks";
 import { Tooltip } from "@mantine/core";
@@ -57,10 +58,27 @@ const defaultEdgeOptions: DefaultEdgeOptions = {
     style: { strokeWidth: 1 },
 };
 
-const FlowCanvas = observer(function FlowCanvas() {
+const FlowCanvas = function FlowCanvas() {
     const reactFlowInstance = useReactFlow();
+    const [nodes, setNodes] = useState<Node[]>([]);
+    const [edges, setEdges] = useState<Edge[]>([]);
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
     const [modalOpened, { open: openModal, close: closeModal }] = useDisclosure(false);
+    const pushingToStore = useRef(false);
+    const reconnectingEdgeId = useRef<string | null>(null);
+
+    // Sync from MobX store to local state (load workflow, drag-and-drop add, etc.)
+    useEffect(() => {
+        const dispose = autorun(() => {
+            const storeNodes = toJS(workflowStore.nodes);
+            const storeEdges = toJS(workflowStore.edges);
+            if (!pushingToStore.current) {
+                setNodes(storeNodes);
+                setEdges(storeEdges);
+            }
+        });
+        return dispose;
+    }, []);
 
     const onNodeDoubleClick = useCallback((_event: React.MouseEvent, node: Node) => {
         setSelectedNodeId(node.id);
@@ -78,17 +96,92 @@ const FlowCanvas = observer(function FlowCanvas() {
 
     const onNodesChange: OnNodesChange = useCallback(
         (changes) => {
-            workflowStore.setNodes(applyNodeChanges(changes, toJS(workflowStore.nodes)));
+            setNodes((nds) => {
+                const updated = applyNodeChanges(changes, nds);
+                pushingToStore.current = true;
+                if (changes.some((c) => c.type !== "select" && c.type !== "dimensions")) {
+                    workflowStore.setNodes(updated);
+                } else {
+                    runInAction(() => { workflowStore.nodes = updated; });
+                }
+                pushingToStore.current = false;
+                return updated;
+            });
         },
         []
     );
 
     const onEdgesChange: OnEdgesChange = useCallback(
         (changes) => {
-            workflowStore.setEdges(applyEdgeChanges(changes, toJS(workflowStore.edges)));
+            setEdges((eds) => {
+                const updated = applyEdgeChanges(changes, eds);
+                pushingToStore.current = true;
+                if (changes.some((c) => c.type !== "select")) {
+                    workflowStore.setEdges(updated);
+                } else {
+                    runInAction(() => { workflowStore.edges = updated; });
+                }
+                pushingToStore.current = false;
+                return updated;
+            });
         },
         []
     );
+
+    const isValidConnection = useCallback(
+        (connection: Connection) => {
+            // Exclude the edge being reconnected so it doesn't block itself
+            const edges = toJS(workflowStore.edges)
+                .filter((e) => e.id !== reconnectingEdgeId.current);
+
+            // Check source node: if it already has outgoing edges, the new one must use the same source handle
+            const existingFromSource = edges.find((e) => e.source === connection.source);
+            if (existingFromSource && existingFromSource.sourceHandle !== connection.sourceHandle) {
+                return false;
+            }
+
+            // Check target node: if it already has incoming edges, the new one must use the same target handle
+            const existingToTarget = edges.find((e) => e.target === connection.target);
+            if (existingToTarget && existingToTarget.targetHandle !== connection.targetHandle) {
+                return false;
+            }
+
+            return true;
+        },
+        []
+    );
+
+    const onReconnectStart = useCallback((_event: React.MouseEvent, edge: Edge) => {
+        reconnectingEdgeId.current = edge.id;
+    }, []);
+
+    const onReconnect = useCallback(
+        (oldEdge: Edge, newConnection: Connection) => {
+            reconnectingEdgeId.current = null;
+            setEdges((eds) => {
+                const updated = reconnectEdge(oldEdge, newConnection, eds);
+                pushingToStore.current = true;
+                workflowStore.setEdges(updated);
+                pushingToStore.current = false;
+                return updated;
+            });
+        },
+        []
+    );
+
+    const onReconnectEnd = useCallback((_event: MouseEvent | TouchEvent, edge: Edge) => {
+        // If reconnect was cancelled (dropped on empty space), remove the edge
+        if (reconnectingEdgeId.current) {
+            reconnectingEdgeId.current = null;
+            setEdges((eds) => {
+                const updated = eds.filter((e) => e.id !== edge.id);
+                pushingToStore.current = true;
+                workflowStore.setEdges(updated);
+                pushingToStore.current = false;
+                return updated;
+            });
+        }
+    }, []);
 
     const onConnect: OnConnect = useCallback(
         (params) => {
@@ -154,13 +247,17 @@ const FlowCanvas = observer(function FlowCanvas() {
 
     return (<>
         <ReactFlow
-            nodes={toJS(workflowStore.nodes)}
-            edges={toJS(workflowStore.edges)}
+            nodes={nodes}
+            edges={edges}
             nodeTypes={nodeTypes}
             defaultEdgeOptions={defaultEdgeOptions}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
+            onReconnectStart={onReconnectStart}
+            onReconnect={onReconnect}
+            onReconnectEnd={onReconnectEnd}
+            isValidConnection={isValidConnection}
             onDragOver={onDragOver}
             onDrop={onDrop}
             onNodeDoubleClick={onNodeDoubleClick}
@@ -179,6 +276,6 @@ const FlowCanvas = observer(function FlowCanvas() {
         <NodeInputsModal opened={modalOpened} onClose={closeModal} nodeId={selectedNodeId} />
     </>
     );
-});
+}
 
 export default FlowCanvas;

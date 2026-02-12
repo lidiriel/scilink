@@ -59,10 +59,28 @@
     flex-shrink: 0;
 }
 
+.device-node-content {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
 .device-node-label {
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     font-weight: 600;
     color: #1f2937;
+    white-space: nowrap;
+}
+
+.device-node-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.device-node-field {
+    font-size: 0.5625rem;
+    color: #6b7280;
     white-space: nowrap;
 }
 

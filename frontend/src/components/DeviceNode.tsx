@@ -8,6 +8,9 @@ import "./DeviceNode.scss";
 const DeviceNode = memo(function DeviceNode({ id, data }: NodeProps) {
     const Icon = getDeviceIcon(data.tags);
 
+    const visibleFields: string[] = data.nodeData?.visible_fields || [];
+    const userInputs: Record<string, any> = data.nodeData?.user_inputs || {};
+
     return (
         <div className="device-node">
             <button
@@ -23,7 +26,18 @@ const DeviceNode = memo(function DeviceNode({ id, data }: NodeProps) {
             <div className="device-node-icon">
                 <Icon size={14} />
             </div>
-            <span className="device-node-label">{data.label}</span>
+            <div className="device-node-content">
+                <span className="device-node-label">{data.label}</span>
+                {visibleFields.length > 0 && (
+                    <div className="device-node-fields">
+                        {visibleFields.map((key) => (
+                            <span key={key} className="device-node-field">
+                                {key}: {String(userInputs[key] ?? "")}
+                            </span>
+                        ))}
+                    </div>
+                )}
+            </div>
             <Handle type="target" position={Position.Top} id="target-top" />
             <Handle type="target" position={Position.Left} id="target-left" />
             <Handle type="source" position={Position.Bottom} id="source-bottom" />

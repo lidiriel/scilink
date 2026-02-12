@@ -46,3 +46,16 @@ npm run dev       # Start dev server with hot reload
 - **Unsafe arguments** - Ensure type compatibility
 
 See [typescript-eslint documentation](https://typescript-eslint.io) for more details on type-aware linting.
+
+### Workflow Canvas - Connection Rules
+
+The workflow canvas (`FlowCanvas.tsx`) uses React Flow to let users build workflows by connecting nodes (blocks, devices, sub-workflows).
+
+Each node exposes **two input connectors** (top, left) and **two output connectors** (bottom, right). When creating edges between nodes, the following validation rules apply:
+
+- **Port consistency per node**: Once a node's first connection is made on a given connector, all subsequent connections of the same direction must use the same connector.
+  - *Output*: If a node's first outgoing edge leaves from `source-bottom`, all future outgoing edges from that node must also use `source-bottom`.
+  - *Input*: If a node's first incoming edge arrives at `target-top`, all future incoming edges to that node must also use `target-top`.
+- **No duplicate edges**: Only one edge is allowed between the same source/target node pair.
+
+This is enforced via the `isValidConnection` callback passed to the `<ReactFlow>` component.
