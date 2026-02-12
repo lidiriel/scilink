@@ -4,6 +4,7 @@ interface WorkflowData {
     id: string;
     name: string;
     experiment_id: number;
+    parentId?: string | null;
 }
 
 interface ExperimentData {
