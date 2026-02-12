@@ -267,4 +267,4 @@ import { piecesStore } from "./pieces";
 
 const workflowStore = new WorkflowStore();
 export type { ApiNode, ApiEdge };
-export { workflowStore };
+export { workflowStore, reactFlowNodeToApi, reactFlowEdgeToApi };

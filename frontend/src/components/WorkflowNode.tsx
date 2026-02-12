@@ -1,10 +1,13 @@
 import { memo } from "react";
 import { Handle, Position, type NodeProps } from "reactflow";
-import { IconX, IconSitemap } from "@tabler/icons-react";
+import { useNavigate } from "react-router-dom";
+import { IconX, IconSitemap, IconPencil } from "@tabler/icons-react";
 import { workflowStore } from "../behaviour/workflows";
 import "./WorkflowNode.scss";
 
 const WorkflowNode = memo(function WorkflowNode({ id, data }: NodeProps) {
+    const navigate = useNavigate();
+
     return (
         <div className="workflow-node">
             <button
@@ -17,6 +20,18 @@ const WorkflowNode = memo(function WorkflowNode({ id, data }: NodeProps) {
             >
                 <IconX size={10} />
             </button>
+            {data.workflowRef && (
+                <button
+                    className="workflow-node-edit"
+                    title="Edit sub-workflow"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/workflows/${data.workflowRef}`);
+                    }}
+                >
+                    <IconPencil size={10} />
+                </button>
+            )}
             <div className="workflow-node-icon">
                 <IconSitemap size={14} />
             </div>

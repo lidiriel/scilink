@@ -17,12 +17,14 @@
         box-shadow: 0 1px 4px rgba(2, 132, 199, 0.15);
     }
 
-    &:hover .workflow-node-delete {
+    &:hover .workflow-node-delete,
+    &:hover .workflow-node-edit {
         opacity: 1;
     }
 }
 
-.workflow-node-delete {
+.workflow-node-delete,
+.workflow-node-edit {
     position: absolute;
     top: -8px;
     left: -8px;
@@ -43,6 +45,17 @@
     &:hover {
         background: #ef4444;
         border-color: #ef4444;
+        color: #ffffff;
+    }
+}
+
+.workflow-node-edit {
+    left: auto;
+    right: -8px;
+
+    &:hover {
+        background: #0284c7;
+        border-color: #0284c7;
         color: #ffffff;
     }
 }

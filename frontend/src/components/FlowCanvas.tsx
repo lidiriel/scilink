@@ -29,6 +29,7 @@ import BlockNode from "./BlockNode";
 import WorkflowNode from "./WorkflowNode";
 import DeviceNode from "./DeviceNode";
 import NodeInputsModal from "../modals/NodeInputsModal";
+import AreaOverlay, { type AreaBounds } from "./AreaOverlay";
 
 function autoLayout(nodes: Node[], edges: Edge[]): Node[] {
     const g = new dagre.graphlib.Graph();
@@ -58,14 +59,87 @@ const defaultEdgeOptions: DefaultEdgeOptions = {
     style: { strokeWidth: 1 },
 };
 
-const FlowCanvas = function FlowCanvas() {
+interface FlowCanvasProps {
+    selectionMode?: boolean;
+    areaValid?: boolean;
+    onSelectedNodesChange?: (nodeIds: string[]) => void;
+}
+
+const FlowCanvas = function FlowCanvas({ selectionMode = false, areaValid = false, onSelectedNodesChange }: FlowCanvasProps) {
     const reactFlowInstance = useReactFlow();
     const [nodes, setNodes] = useState<Node[]>([]);
     const [edges, setEdges] = useState<Edge[]>([]);
+    const [areaBounds, setAreaBounds] = useState<AreaBounds | null>(null);
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
     const [modalOpened, { open: openModal, close: closeModal }] = useDisclosure(false);
     const pushingToStore = useRef(false);
     const reconnectingEdgeId = useRef<string | null>(null);
+    const pendingSelectionRef = useRef<Node[]>([]);
+
+    // Clear area when leaving selection mode
+    useEffect(() => {
+        if (!selectionMode) {
+            setAreaBounds(null);
+            pendingSelectionRef.current = [];
+        }
+    }, [selectionMode]);
+
+    // Finalize area on mouseup: create bounds from pending selection, then deselect nodes
+    useEffect(() => {
+        const onMouseUp = () => {
+            const pending = pendingSelectionRef.current;
+            if (pending.length === 0) return;
+            pendingSelectionRef.current = [];
+
+            const AREA_PADDING = 20;
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            for (const n of pending) {
+                const w = n.width ?? 160;
+                const h = n.height ?? 40;
+                minX = Math.min(minX, n.position.x);
+                minY = Math.min(minY, n.position.y);
+                maxX = Math.max(maxX, n.position.x + w);
+                maxY = Math.max(maxY, n.position.y + h);
+            }
+            setAreaBounds({
+                minX: minX - AREA_PADDING,
+                minY: minY - AREA_PADDING,
+                maxX: maxX + AREA_PADDING,
+                maxY: maxY + AREA_PADDING,
+            });
+            // Remove RF's post-selection styling (blue borders + nodesselection box)
+            setNodes((nds) => nds.map((n) => (n.selected ? { ...n, selected: false } : n)));
+        };
+
+        if (selectionMode) {
+            document.addEventListener("mouseup", onMouseUp);
+            return () => document.removeEventListener("mouseup", onMouseUp);
+        }
+    }, [selectionMode]);
+
+    // Compute which nodes are inside the locked area bounds (by center point)
+    const areaNodeIds = areaBounds
+        ? new Set(
+              nodes
+                  .filter((n) => {
+                      const cx = n.position.x + (n.width ?? 160) / 2;
+                      const cy = n.position.y + (n.height ?? 40) / 2;
+                      return cx >= areaBounds.minX && cx <= areaBounds.maxX
+                          && cy >= areaBounds.minY && cy <= areaBounds.maxY;
+                  })
+                  .map((n) => n.id)
+          )
+        : new Set<string>();
+
+    // Notify parent of area node changes
+    const prevAreaIdsRef = useRef<string>("");
+    useEffect(() => {
+        const key = [...areaNodeIds].sort().join(",");
+        if (key !== prevAreaIdsRef.current) {
+            prevAreaIdsRef.current = key;
+            onSelectedNodesChange?.([...areaNodeIds]);
+        }
+    });
 
     // Sync from MobX store to local state (load workflow, drag-and-drop add, etc.)
     useEffect(() => {
@@ -196,6 +270,25 @@ const FlowCanvas = function FlowCanvas() {
         []
     );
 
+    const onSelectionChange = useCallback(
+        ({ nodes: selected }: { nodes: Node[] }) => {
+            if (!selectionMode) return;
+            if (selected.length === 0) return;
+            // Area already locked — ignore further selection changes (e.g. clicking a node to move it).
+            // User must clear the area (X button) before drawing a new one.
+            if (areaBounds) return;
+
+            // Store latest selection; area will be created on mouseup
+            pendingSelectionRef.current = selected;
+        },
+        [selectionMode, areaBounds]
+    );
+
+    const onClearArea = useCallback(() => {
+        setAreaBounds(null);
+        onSelectedNodesChange?.([]);
+    }, [onSelectedNodesChange]);
+
     const onDragOver = useCallback((event: DragEvent) => {
         event.preventDefault();
         event.dataTransfer.dropEffect = "copy";
@@ -246,33 +339,48 @@ const FlowCanvas = function FlowCanvas() {
     );
 
     return (<>
-        <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            nodeTypes={nodeTypes}
-            defaultEdgeOptions={defaultEdgeOptions}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onReconnectStart={onReconnectStart}
-            onReconnect={onReconnect}
-            onReconnectEnd={onReconnectEnd}
-            isValidConnection={isValidConnection}
-            onDragOver={onDragOver}
-            onDrop={onDrop}
-            onNodeDoubleClick={onNodeDoubleClick}
-            deleteKeyCode="Delete"
-            fitView
-        >
-            <Controls>
-                <Tooltip label="Auto-layout" position="right" withArrow>
-                    <ControlButton onClick={onAutoLayout}>
-                        <IconLayoutDistributeHorizontal size={16} />
-                    </ControlButton>
-                </Tooltip>
-            </Controls>
-            <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
-        </ReactFlow>
+        <div style={{ position: "relative", width: "100%", height: "100%" }}>
+            <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                nodeTypes={nodeTypes}
+                defaultEdgeOptions={defaultEdgeOptions}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+                onReconnectStart={onReconnectStart}
+                onReconnect={onReconnect}
+                onReconnectEnd={onReconnectEnd}
+                isValidConnection={isValidConnection}
+                onDragOver={onDragOver}
+                onDrop={onDrop}
+                onNodeDoubleClick={onNodeDoubleClick}
+                onSelectionChange={onSelectionChange}
+                selectionOnDrag={selectionMode}
+                panOnDrag={selectionMode ? [1, 2] : true}
+                deleteKeyCode="Delete"
+                fitView
+            >
+                <Controls>
+                    <Tooltip label="Auto-layout" position="right" withArrow>
+                        <ControlButton onClick={onAutoLayout}>
+                            <IconLayoutDistributeHorizontal size={16} />
+                        </ControlButton>
+                    </Tooltip>
+                </Controls>
+                <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
+            </ReactFlow>
+            {selectionMode && areaBounds && (
+                <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", overflow: "hidden" }}>
+                    <AreaOverlay
+                        bounds={areaBounds}
+                        valid={areaValid}
+                        onClose={onClearArea}
+                        onBoundsChange={setAreaBounds}
+                    />
+                </div>
+            )}
+        </div>
         <NodeInputsModal opened={modalOpened} onClose={closeModal} nodeId={selectedNodeId} />
     </>
     );
