@@ -73,10 +73,10 @@ def update_workflow(workflow_id):
         # Remove existing edges
         Edge.query.filter_by(workflow_id=workflow_id).delete()
 
-        # Add new edges
+        # Add new edges (always scope edge ID with workflow_id for uniqueness across workflows)
         for edge_data in data['edges']:
             edge = Edge(
-                id=edge_data.get('id', f"{workflow_id}-e-{edge_data['from']}-{edge_data['to']}"),
+                id=f"{workflow_id}-e-{edge_data['from']}-{edge_data['to']}",
                 workflow_id=workflow_id,
                 source_node_id=edge_data['from'],
                 target_node_id=edge_data['to'],
@@ -93,6 +93,10 @@ def update_workflow(workflow_id):
             if subflow_id:
                 sub = Workflow.query.get(subflow_id)
                 if sub and sub.parent_id != workflow_id:
+                    # Check that subflow_id is not an ancestor of workflow_id
+                    ancestors = get_ancestor_ids(workflow_id)
+                    if subflow_id in ancestors or subflow_id == workflow_id:
+                        return jsonify({'error': f'Cannot add workflow "{sub.name}" as sub-workflow: it would create a cycle'}), 400
                     sub.parent_id = workflow_id
 
     db.session.commit()
@@ -149,11 +153,11 @@ def create_workflow():
             )
             db.session.add(node)
 
-    # Add edges if provided
+    # Add edges if provided (always scope edge ID with workflow_id for uniqueness across workflows)
     if 'edges' in data:
         for edge_data in data['edges']:
             edge = Edge(
-                id=edge_data.get('id', f"{workflow.id}-e-{edge_data['from']}-{edge_data['to']}"),
+                id=f"{workflow.id}-e-{edge_data['from']}-{edge_data['to']}",
                 workflow_id=workflow.id,
                 source_node_id=edge_data['from'],
                 target_node_id=edge_data['to'],
@@ -212,3 +216,18 @@ def list_workflows():
     """List all available workflows"""
     workflows = Workflow.query.all()
     return jsonify([{'id': w.id, 'name': w.name, 'parentId': w.parent_id} for w in workflows])
+
+#@bp.route('/workflow/<workflow_id>/ancestors', methodes=['GET'])
+def get_ancestor_ids(workflow_id):
+    """Walk up the parent chain and return the set of ancestor workflow IDs."""
+    ancestors = set()
+    current_id = workflow_id
+    while current_id:
+        wf = Workflow.query.get(current_id)
+        if not wf or not wf.parent_id:
+            break
+        if wf.parent_id in ancestors:
+            break  # safety: already-circular chain
+        ancestors.add(wf.parent_id)
+        current_id = wf.parent_id
+    return ancestors

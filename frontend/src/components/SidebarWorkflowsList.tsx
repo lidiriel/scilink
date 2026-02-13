@@ -10,9 +10,22 @@ const SidebarWorkflowsList = observer(function SidebarWorkflowsList() {
           )
         : null;
 
+    // Build ancestor set by walking parentId chain
+    const ancestorIds = new Set<string>();
+    if (parentExperiment && workflowStore.currentWorkflowId) {
+        const wfMap = new Map(parentExperiment.workflows.map((wf) => [wf.id, wf]));
+        let current = wfMap.get(workflowStore.currentWorkflowId);
+        while (current?.parentId) {
+            ancestorIds.add(current.parentId);
+            current = wfMap.get(current.parentId);
+        }
+    }
+
     const siblingWorkflows = parentExperiment
-        ? parentExperiment.workflows.filter((wf) => wf.id !== workflowStore.currentWorkflowId)
-        : [];
+    ? parentExperiment.workflows.filter(
+          (wf) => wf.id !== workflowStore.currentWorkflowId && !ancestorIds.has(wf.id)
+      )
+    : [];
 
     if (siblingWorkflows.length === 0) {
         return <p className="sidebar-empty">No other workflows in this experiment</p>;
