@@ -134,6 +134,8 @@ class Edge(db.Model):
     workflow_id = db.Column(db.String(100), db.ForeignKey('workflows.id', ondelete='CASCADE'), nullable=False)
     source_node_id = db.Column(db.String(100), nullable=False)
     target_node_id = db.Column(db.String(100), nullable=False)
+    source_handle = db.Column(db.String(50), nullable=True)
+    target_handle = db.Column(db.String(50), nullable=True)
     animated = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -143,11 +145,16 @@ class Edge(db.Model):
 
     def to_dict(self):
         """Convert edge to dictionary format"""
-        return {
+        d = {
             'from': self.source_node_id,
             'to': self.target_node_id,
-            'animated': self.animated
+            'animated': self.animated,
         }
+        if self.source_handle:
+            d['sourceHandle'] = self.source_handle
+        if self.target_handle:
+            d['targetHandle'] = self.target_handle
+        return d
 
     def __repr__(self):
         return f'<Edge {self.id}: {self.source_node_id} -> {self.target_node_id}>'

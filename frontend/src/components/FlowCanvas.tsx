@@ -224,13 +224,13 @@ const FlowCanvas = function FlowCanvas({ selectionMode = false, areaValid = fals
 
             // Check source node: if it already has outgoing edges, the new one must use the same source handle
             const existingFromSource = edges.find((e) => e.source === connection.source);
-            if (existingFromSource && existingFromSource.sourceHandle !== connection.sourceHandle) {
+            if (existingFromSource && existingFromSource.sourceHandle && existingFromSource.sourceHandle !== connection.sourceHandle) {
                 return false;
             }
 
             // Check target node: if it already has incoming edges, the new one must use the same target handle
             const existingToTarget = edges.find((e) => e.target === connection.target);
-            if (existingToTarget && existingToTarget.targetHandle !== connection.targetHandle) {
+            if (existingToTarget && existingToTarget.targetHandle && existingToTarget.targetHandle !== connection.targetHandle) {
                 return false;
             }
 
@@ -347,10 +347,10 @@ const FlowCanvas = function FlowCanvas({ selectionMode = false, areaValid = fals
 
             // Validate source handle constraint
             const existingFromSource = edges.find((e) => e.source === from.nodeId);
-            if (existingFromSource && existingFromSource.sourceHandle !== from.handleId) return;
+            if (existingFromSource && existingFromSource.sourceHandle && existingFromSource.sourceHandle !== from.handleId) return;
 
             // Validate target handle constraint
-            if (existingToTarget && existingToTarget.targetHandle !== targetHandle) return;
+            if (existingToTarget && existingToTarget.targetHandle && existingToTarget.targetHandle !== targetHandle) return;
 
             workflowStore.setEdges(addEdge({
                 source: from.nodeId,

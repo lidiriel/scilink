@@ -80,6 +80,8 @@ def update_workflow(workflow_id):
                 workflow_id=workflow_id,
                 source_node_id=edge_data['from'],
                 target_node_id=edge_data['to'],
+                source_handle=edge_data.get('sourceHandle'),
+                target_handle=edge_data.get('targetHandle'),
                 animated=edge_data.get('animated', True)
             )
             db.session.add(edge)
@@ -155,6 +157,8 @@ def create_workflow():
                 workflow_id=workflow.id,
                 source_node_id=edge_data['from'],
                 target_node_id=edge_data['to'],
+                source_handle=edge_data.get('sourceHandle'),
+                target_handle=edge_data.get('targetHandle'),
                 animated=edge_data.get('animated', True)
             )
             db.session.add(edge)

@@ -60,6 +60,10 @@ Each node exposes **two input connectors** (top, left) and **two output connecto
 
 This is enforced via the `isValidConnection` callback passed to the `<ReactFlow>` component.
 
+#### Edge handle persistence
+
+Each edge stores which connector it is attached to on both ends (`sourceHandle` and `targetHandle`, e.g. `source-bottom`, `target-top`). These handles are persisted to the database so that after saving and reloading a workflow, the port consistency validation still works correctly. Without persisted handles, reloaded edges would have no handle info and block all new connections.
+
 ### Sub-workflow Creation
 
 Users can extract a group of nodes into a new sub-workflow directly from the canvas.

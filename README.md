@@ -106,7 +106,7 @@ scilink-src/
 | `experiments`       | Experiment metadata                         |
 | `workflows`         | Workflow definitions (supports hierarchy via `parent_id`)   |
 | `nodes`             | Workflow nodes (blocks, devices, composites)|
-| `edges`             | Connections between nodes                   |
+| `edges`             | Connections between nodes (with handle info)|
 | `blocks_used`       | Tracks block/piece usage per workflow       |
 | `devices_installed` | Installed device instances                  |
 | `settings`          | Platforms, buses, and configuration         |
@@ -149,14 +149,15 @@ Double-clicking a workflow node opens a settings modal. Fields are rendered base
 ## API Endpoints
 
 ### Workflows
-| Method   | Endpoint                                | Description      |
-|----------|-----------------------------------------|------------------|
-| `GET`    | `/api/workflows`                        | List workflows   |
-| `GET`    | `/api/workflow/<id>`                    | Get workflow     |
-| `POST`   | `/api/workflow`                         | Create workflow  |
-| `PUT`    | `/api/workflow/<id>`                    | Update workflow  |
-| `PUT`    | `/api/workflow/<wf_id>/nodes/<node_id>` | Update node data |
-| `DELETE` | `/api/workflow/<id>`                    | Delete workflow  |
+| Method   | Endpoint                                | Description                                 |
+|----------|-----------------------------------------|---------------------------------------------|
+| `GET`    | `/api/workflows`                        | List workflows                              |
+| `GET`    | `/api/workflow/<id>`                    | Get workflow                                |
+| `POST`   | `/api/workflow`                         | Create workflow                             |
+| `PUT`    | `/api/workflow/<id>`                    | Update workflow (nodes, edges with handles) |
+| `PUT`    | `/api/workflow/<wf_id>/nodes/<node_id>` | Update node data                            |
+| `DELETE` | `/api/workflow/<id>`                    | Delete workflow                             |
+| `POST`   | `/api/workflows/<id>/run`               | Run workflow                                |
 
 ### Pieces
 | Method | Endpoint                         | Description            |

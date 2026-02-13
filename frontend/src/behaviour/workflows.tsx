@@ -19,6 +19,8 @@ interface ApiEdge {
     id: string;
     from: string;
     to: string;
+    sourceHandle?: string;
+    targetHandle?: string;
     animated?: boolean;
 }
 
@@ -67,21 +69,27 @@ function reactFlowNodeToApi(node: Node): ApiNode {
 }
 
 function apiEdgeToReactFlow(apiEdge: ApiEdge): Edge {
-    return {
+    const edge: Edge = {
         id: apiEdge.id || `e-${apiEdge.from}-${apiEdge.to}`,
         source: apiEdge.from,
         target: apiEdge.to,
         animated: apiEdge.animated !== false,
     };
+    if (apiEdge.sourceHandle) edge.sourceHandle = apiEdge.sourceHandle;
+    if (apiEdge.targetHandle) edge.targetHandle = apiEdge.targetHandle;
+    return edge;
 }
 
 function reactFlowEdgeToApi(edge: Edge): ApiEdge {
-    return {
+    const apiEdge: ApiEdge = {
         id: edge.id,
         from: edge.source,
         to: edge.target,
         animated: edge.animated !== false,
     };
+    if (edge.sourceHandle) apiEdge.sourceHandle = edge.sourceHandle;
+    if (edge.targetHandle) apiEdge.targetHandle = edge.targetHandle;
+    return apiEdge;
 }
 
 class WorkflowStore {
@@ -127,7 +135,7 @@ class WorkflowStore {
                 this.workflowName = data.name || "";
                 this.nodes = (data.nodes || []).map(apiNodeToReactFlow);
                 this.edges = (data.edges || []).map((e: any) =>
-                    apiEdgeToReactFlow({ id: e.id, from: e.from, to: e.to, animated: e.animated })
+                    apiEdgeToReactFlow({ id: e.id, from: e.from, to: e.to, sourceHandle: e.sourceHandle, targetHandle: e.targetHandle, animated: e.animated })
                 );
                 this.updateNodeIdCounter();
                 this.dirty = false;
