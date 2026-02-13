@@ -104,7 +104,8 @@ scilink-src/
 | Table               | Description                                 |
 |---------------------|---------------------------------------------|
 | `experiments`       | Experiment metadata                         |
-| `workflows`         | Workflow definitions (supports hierarchy via `parent_id`)   |
+| `workflows`         | Workflow definitions                        |
+| `subflows`          | Parent-child relationships between workflows (many-to-many) |
 | `nodes`             | Workflow nodes (blocks, devices, composites)|
 | `edges`             | Connections between nodes (with handle info)|
 | `blocks_used`       | Tracks block/piece usage per workflow       |
@@ -115,7 +116,8 @@ scilink-src/
 
 - **Composite primary keys**: Nodes use `(id, workflow_id)` as primary key
 - **JSONB columns**: `nodes.data`, `devices_installed.data`, and `settings.data` store flexible structured data (user inputs, dependency matches, bus config)
-- **Self-referential FK**: `devices_installed.depends_on_id` references another device; `workflows.parent_id` references a parent workflow
+- **Subflows join table**: `subflows` tracks parent-child relationships between workflows, allowing a workflow to appear as a sub-workflow in multiple parents. `nodes.subflow_id` references a `subflows` record (not a workflow directly)
+- **Self-referential FK**: `devices_installed.depends_on_id` references another device
 - **Cascade deletes**: Deleting a workflow removes its nodes, edges, and blocks_used
 
 ## Pieces
@@ -190,7 +192,7 @@ Double-clicking a workflow node opens a settings modal. Fields are rendered base
 | `POST`   | `/api/experiments`                        | Create experiment          |
 | `PUT`    | `/api/experiments/<id>`                   | Update experiment          |
 | `DELETE` | `/api/experiments/<id>`                   | Delete experiment          |
-| `POST`   | `/api/experiments/<id>/workflows`         | Add workflow (accepts `parentId`) |
+| `POST`   | `/api/experiments/<id>/workflows`         | Add workflow to experiment        |
 
 ### Other
 | Method | Endpoint      | Description  |

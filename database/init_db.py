@@ -9,7 +9,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from frontend.workflow_backend_db import app
-from frontend.models import db, Workflow, Node, Edge
+from frontend.models import db, Workflow, Node, Edge, Subflow
 
 
 def init_database(load_sample_data=True):
@@ -42,16 +42,20 @@ def load_sample_workflows():
     # Create workflow B (sub-workflow)
     workflow_b = Workflow(
         id='workflow_B',
-        name='Process B - Detail',
-        parent_id='main'
+        name='Process B - Detail'
     )
     db.session.add(workflow_b)
+
+    # Create subflow record linking workflow_B to main
+    subflow_b = Subflow(workflow_id='workflow_B', parent_id='main')
+    db.session.add(subflow_b)
+    db.session.flush()  # Get the subflow id
 
     # Add nodes for main workflow
     main_nodes = [
         Node(id='A', workflow_id='main', type='default', label='Process A', position_x=100, position_y=150),
         Node(id='B', workflow_id='main', type='composite', label='Process B (Composite)',
-             subflow_id='workflow_B', position_x=350, position_y=150),
+             subflow_id=subflow_b.id, position_x=350, position_y=150),
         Node(id='C', workflow_id='main', type='default', label='Process C', position_x=600, position_y=150)
     ]
     for node in main_nodes:

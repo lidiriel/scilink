@@ -101,8 +101,7 @@ def add_workflow_to_experiment(experiment_id):
     workflow = Workflow(
         id=workflow_id,
         name=data.get('name', 'New Workflow'),
-        experiment_id=experiment_id,
-        parent_id=data.get('parentId')
+        experiment_id=experiment_id
     )
     db.session.add(workflow)
     db.session.commit()

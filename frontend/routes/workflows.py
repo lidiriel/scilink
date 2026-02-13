@@ -2,7 +2,7 @@
 Workflow routes: CRUD operations for workflows
 """
 from flask import Blueprint, jsonify, request
-from models import db, Workflow, Node, Edge, BlockUsed
+from models import db, Workflow, Node, Edge, BlockUsed, Subflow
 
 bp = Blueprint('workflows', __name__, url_prefix='/api')
 
@@ -86,18 +86,40 @@ def update_workflow(workflow_id):
             )
             db.session.add(edge)
 
-    # Auto-set parent_id on referenced sub-workflows
+    # Manage Subflow records for nodes with workflowRef
     if 'nodes' in data:
+        referenced_workflow_ids = set()
+        ancestors = get_ancestor_ids(workflow_id)
         for node_data in data['nodes']:
-            subflow_id = node_data.get('subflowId')
-            if subflow_id:
-                sub = Workflow.query.get(subflow_id)
-                if sub and sub.parent_id != workflow_id:
-                    # Check that subflow_id is not an ancestor of workflow_id
-                    ancestors = get_ancestor_ids(workflow_id)
-                    if subflow_id in ancestors or subflow_id == workflow_id:
-                        return jsonify({'error': f'Cannot add workflow "{sub.name}" as sub-workflow: it would create a cycle'}), 400
-                    sub.parent_id = workflow_id
+            workflow_ref = (node_data.get('data') or {}).get('workflowRef')
+            if not workflow_ref:
+                continue
+            referenced_workflow_ids.add(workflow_ref)
+
+            # Cycle check
+            if workflow_ref == workflow_id:
+                return jsonify({'error': 'Cannot add a workflow as sub-workflow of itself'}), 400
+            if workflow_ref in ancestors:
+                ref_wf = Workflow.query.get(workflow_ref)
+                name = ref_wf.name if ref_wf else workflow_ref
+                return jsonify({'error': f'Cannot add workflow "{name}" as sub-workflow: it would create a cycle'}), 400
+
+            # Find or create Subflow record
+            sf = Subflow.query.filter_by(workflow_id=workflow_ref, parent_id=workflow_id).first()
+            if not sf:
+                sf = Subflow(workflow_id=workflow_ref, parent_id=workflow_id)
+                db.session.add(sf)
+                db.session.flush()
+
+            # Set subflow_id on the node
+            node = Node.query.get((node_data['id'], workflow_id))
+            if node:
+                node.subflow_id = sf.id
+
+        # Remove orphaned Subflow records for this parent
+        for sf in Subflow.query.filter_by(parent_id=workflow_id).all():
+            if sf.workflow_id not in referenced_workflow_ids:
+                db.session.delete(sf)
 
     db.session.commit()
     return jsonify({'success': True, 'workflow': workflow.to_dict()})
@@ -115,8 +137,7 @@ def create_workflow():
     # Create new workflow
     workflow = Workflow(
         id=data['id'],
-        name=data['name'],
-        parent_id=data.get('parentId')
+        name=data['name']
     )
     db.session.add(workflow)
 
@@ -215,19 +236,16 @@ def run_workflow(workflow_id):
 def list_workflows():
     """List all available workflows"""
     workflows = Workflow.query.all()
-    return jsonify([{'id': w.id, 'name': w.name, 'parentId': w.parent_id} for w in workflows])
+    return jsonify([{'id': w.id, 'name': w.name} for w in workflows])
 
-#@bp.route('/workflow/<workflow_id>/ancestors', methodes=['GET'])
 def get_ancestor_ids(workflow_id):
-    """Walk up the parent chain and return the set of ancestor workflow IDs."""
+    """BFS up through the subflows table to find all ancestor workflow IDs."""
     ancestors = set()
-    current_id = workflow_id
-    while current_id:
-        wf = Workflow.query.get(current_id)
-        if not wf or not wf.parent_id:
-            break
-        if wf.parent_id in ancestors:
-            break  # safety: already-circular chain
-        ancestors.add(wf.parent_id)
-        current_id = wf.parent_id
+    queue = [workflow_id]
+    while queue:
+        wf_id = queue.pop()
+        for sf in Subflow.query.filter_by(workflow_id=wf_id).all():
+            if sf.parent_id not in ancestors:
+                ancestors.add(sf.parent_id)
+                queue.append(sf.parent_id)
     return ancestors

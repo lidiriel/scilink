@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS edges CASCADE;
 DROP TABLE IF EXISTS nodes CASCADE;
 DROP TABLE IF EXISTS blocks_used CASCADE;
 DROP TABLE IF EXISTS workflows CASCADE;
+DROP TABLE IF EXISTS subflows CASCADE;
 DROP TABLE IF EXISTS experiments CASCADE;
 DROP TABLE IF EXISTS settings CASCADE;
 DROP TABLE IF EXISTS devices_installed CASCADE;
@@ -23,11 +24,9 @@ CREATE TABLE experiments (
 CREATE TABLE workflows (
     id VARCHAR(100) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    parent_id VARCHAR(100),
     experiment_id INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (parent_id) REFERENCES workflows(id) ON DELETE CASCADE,
     FOREIGN KEY (experiment_id) REFERENCES experiments(id) ON DELETE CASCADE
 );
 
@@ -79,13 +78,22 @@ CREATE TABLE blocks_used (
     FOREIGN KEY (workflow_id) REFERENCES workflows(id) ON DELETE CASCADE
 );
 
+-- Create subflows table (tracks parent-child relationships between workflows)
+CREATE TABLE subflows (
+    id SERIAL PRIMARY KEY,
+    workflow_id VARCHAR(100) NOT NULL,
+    parent_id VARCHAR(100) NOT NULL,
+    FOREIGN KEY (workflow_id) REFERENCES workflows(id) ON DELETE CASCADE,
+    FOREIGN KEY (parent_id) REFERENCES workflows(id) ON DELETE CASCADE
+);
+
 -- Create nodes table
 CREATE TABLE nodes (
     id VARCHAR(100) NOT NULL,
     workflow_id VARCHAR(100) NOT NULL,
     type VARCHAR(50) NOT NULL DEFAULT 'default',
     label VARCHAR(255) NOT NULL,
-    subflow_id VARCHAR(100),
+    subflow_id INTEGER,
     device_id INTEGER,
     block_id INTEGER,
     position_x INTEGER NOT NULL,
@@ -95,7 +103,7 @@ CREATE TABLE nodes (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id, workflow_id),
     FOREIGN KEY (workflow_id) REFERENCES workflows(id) ON DELETE CASCADE,
-    FOREIGN KEY (subflow_id) REFERENCES workflows(id) ON DELETE SET NULL,
+    FOREIGN KEY (subflow_id) REFERENCES subflows(id) ON DELETE SET NULL,
     FOREIGN KEY (device_id) REFERENCES devices_installed(id) ON DELETE RESTRICT,
     FOREIGN KEY (block_id) REFERENCES blocks_used(id) ON DELETE SET NULL
 );
@@ -106,6 +114,8 @@ CREATE TABLE edges (
     workflow_id VARCHAR(100) NOT NULL,
     source_node_id VARCHAR(100) NOT NULL,
     target_node_id VARCHAR(100) NOT NULL,
+    source_handle VARCHAR(50),
+    target_handle VARCHAR(50),
     animated BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -117,7 +127,8 @@ CREATE INDEX idx_nodes_workflow_id ON nodes(workflow_id);
 CREATE INDEX idx_nodes_device_id ON nodes(device_id);
 CREATE INDEX idx_nodes_block_id ON nodes(block_id);
 CREATE INDEX idx_edges_workflow_id ON edges(workflow_id);
-CREATE INDEX idx_workflows_parent_id ON workflows(parent_id);
+CREATE INDEX idx_subflows_workflow_id ON subflows(workflow_id);
+CREATE INDEX idx_subflows_parent_id ON subflows(parent_id);
 CREATE INDEX idx_workflows_experiment_id ON workflows(experiment_id);
 CREATE INDEX idx_settings_category ON settings(category);
 CREATE INDEX idx_devices_installed_piece_name ON devices_installed(piece_name);

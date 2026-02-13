@@ -25,7 +25,8 @@ class Experiment(db.Model):
             'id': self.id,
             'name': self.name,
             'description': self.description,
-            'workflows': [{'id': w.id, 'name': w.name, 'parentId': w.parent_id} for w in self.workflows],
+            'workflows': [{'id': w.id, 'name': w.name} for w in self.workflows],
+            'subflows': [sf.to_dict() for w in self.workflows for sf in w.as_subflow],
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
@@ -40,7 +41,6 @@ class Workflow(db.Model):
 
     id = db.Column(db.String(100), primary_key=True)
     name = db.Column(db.String(255), nullable=False)
-    parent_id = db.Column(db.String(100), db.ForeignKey('workflows.id', ondelete='CASCADE'), nullable=True)
     experiment_id = db.Column(db.Integer, db.ForeignKey('experiments.id', ondelete='CASCADE'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -48,7 +48,6 @@ class Workflow(db.Model):
     # Relationships
     nodes = db.relationship('Node', back_populates='workflow', cascade='all, delete-orphan', lazy='dynamic', foreign_keys='Node.workflow_id')
     edges = db.relationship('Edge', back_populates='workflow', cascade='all, delete-orphan', lazy='dynamic')
-    parent = db.relationship('Workflow', remote_side=[id], backref='children')
     experiment = db.relationship('Experiment', back_populates='workflows')
 
     def to_dict(self):
@@ -56,7 +55,6 @@ class Workflow(db.Model):
         return {
             'id': self.id,
             'name': self.name,
-            'parentId': self.parent_id,
             'nodes': [node.to_dict() for node in self.nodes],
             'edges': [edge.to_dict() for edge in self.edges],
             'created_at': self.created_at.isoformat() if self.created_at else None,
@@ -75,7 +73,7 @@ class Node(db.Model):
     workflow_id = db.Column(db.String(100), db.ForeignKey('workflows.id', ondelete='CASCADE'), primary_key=True)
     type = db.Column(db.String(50), nullable=False, default='default')
     label = db.Column(db.String(255), nullable=False)
-    subflow_id = db.Column(db.String(100), db.ForeignKey('workflows.id', ondelete='SET NULL'), nullable=True)
+    subflow_id = db.Column(db.Integer, db.ForeignKey('subflows.id', ondelete='SET NULL'), nullable=True)
     device_id = db.Column(db.Integer, db.ForeignKey('devices_installed.id', ondelete='RESTRICT'), nullable=True)
     block_id = db.Column(db.Integer, db.ForeignKey('blocks_used.id', ondelete='SET NULL'), nullable=True)
     position_x = db.Column(db.Integer, nullable=False)
@@ -86,7 +84,7 @@ class Node(db.Model):
 
     # Relationships
     workflow = db.relationship('Workflow', back_populates='nodes', foreign_keys=[workflow_id])
-    subflow = db.relationship('Workflow', foreign_keys=[subflow_id])
+    subflow = db.relationship('Subflow', foreign_keys=[subflow_id])
     device = db.relationship('DeviceInstalled', foreign_keys=[device_id])
     block = db.relationship('BlockUsed', foreign_keys=[block_id])
 
@@ -99,8 +97,6 @@ class Node(db.Model):
             'x': self.position_x,
             'y': self.position_y
         }
-        if self.subflow_id:
-            node_dict['subflowId'] = self.subflow_id
         if self.device_id:
             node_dict['deviceId'] = self.device_id
             # Load device info - use explicit query if relationship not loaded
@@ -119,7 +115,14 @@ class Node(db.Model):
                 node_dict['pieceHash'] = block.piece_hash
                 node_dict['iconClass'] = block.icon_class
         if self.data:
-            node_dict['data'] = self.data
+            node_dict['data'] = dict(self.data)
+        if self.subflow_id:
+            node_dict['subflowId'] = self.subflow_id
+            subflow = self.subflow or Subflow.query.get(self.subflow_id)
+            if subflow:
+                if 'data' not in node_dict:
+                    node_dict['data'] = {}
+                node_dict['data']['workflowRef'] = subflow.workflow_id
         return node_dict
 
     def __repr__(self):
@@ -275,3 +278,24 @@ class BlockUsed(db.Model):
 
     def __repr__(self):
         return f'<BlockUsed {self.id}: {self.piece_name} in Workflow {self.workflow_id}>'
+
+class Subflow(db.Model):
+    """Tracks subflow used in workflow"""
+    __tablename__ = 'subflows'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    workflow_id = db.Column(db.String(100), db.ForeignKey('workflows.id', ondelete='CASCADE'), nullable=False)
+    parent_id = db.Column(db.String(100), db.ForeignKey('workflows.id', ondelete='CASCADE'), nullable=False)    
+
+    workflow = db.relationship('Workflow', backref='as_subflow', foreign_keys=[workflow_id])
+    parent = db.relationship('Workflow', backref='children_subflows', foreign_keys=[parent_id])
+
+    def to_dict(self):
+        """Convert subflow to dictionary format"""
+        return {
+            'id': self.id,
+            'workflow_id': self.workflow_id,
+            'parent_id': self.parent_id
+        }
+    
+    def __repr__(self):
+        return f'<Subflow {self.id} is Workflow {self.workflow_id} in Parent workflow {self.parent_id}>'
