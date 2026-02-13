@@ -75,6 +75,7 @@ const FlowCanvas = function FlowCanvas({ selectionMode = false, areaValid = fals
     const pushingToStore = useRef(false);
     const reconnectingEdgeId = useRef<string | null>(null);
     const pendingSelectionRef = useRef<Node[]>([]);
+    const connectingFrom = useRef<{ nodeId: string; handleId: string } | null>(null);
 
     // Clear area when leaving selection mode
     useEffect(() => {
@@ -270,6 +271,84 @@ const FlowCanvas = function FlowCanvas({ selectionMode = false, areaValid = fals
         []
     );
 
+    const onConnectStart = useCallback(
+        (_event: React.MouseEvent | React.TouchEvent, params: { nodeId: string | null; handleId: string | null }) => {
+            if (params.nodeId && params.handleId) {
+                connectingFrom.current = { nodeId: params.nodeId, handleId: params.handleId };
+            }
+        },
+        []
+    );
+
+    const onConnectEnd = useCallback(
+        (event: MouseEvent | TouchEvent) => {
+            if (!connectingFrom.current) return;
+            const from = connectingFrom.current;
+            connectingFrom.current = null;
+
+            const clientPos = "changedTouches" in event
+                ? { x: event.changedTouches[0].clientX, y: event.changedTouches[0].clientY }
+                : { x: (event as MouseEvent).clientX, y: (event as MouseEvent).clientY };
+
+            // Check if the drop landed on a node element
+            const el = document.elementFromPoint(clientPos.x, clientPos.y);
+            const nodeEl = el?.closest(".react-flow__node") as HTMLElement | null;
+            if (!nodeEl) return;
+
+            const targetNodeId = nodeEl.getAttribute("data-id");
+            if (!targetNodeId || targetNodeId === from.nodeId) return;
+
+            const edges = toJS(workflowStore.edges);
+
+            // Skip if duplicate
+            if (edges.some((e) => e.source === from.nodeId && e.target === targetNodeId)) return;
+
+            // Determine target handle: respect existing handle constraint, otherwise pick nearest
+            const existingToTarget = edges.find((e) => e.target === targetNodeId);
+            let targetHandle: string;
+
+            if (existingToTarget?.targetHandle) {
+                targetHandle = existingToTarget.targetHandle;
+            } else {
+                // Find nearest target handle on the node DOM element
+                const handles = nodeEl.querySelectorAll<HTMLElement>(".react-flow__handle");
+                const targetHandles = Array.from(handles).filter(
+                    (h) => h.dataset.handleid?.startsWith("target-")
+                );
+                if (targetHandles.length === 0) return;
+
+                let closest = targetHandles[0];
+                let minDist = Infinity;
+                for (const h of targetHandles) {
+                    const rect = h.getBoundingClientRect();
+                    const hx = rect.left + rect.width / 2;
+                    const hy = rect.top + rect.height / 2;
+                    const dist = Math.hypot(clientPos.x - hx, clientPos.y - hy);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        closest = h;
+                    }
+                }
+                targetHandle = closest.dataset.handleid || "target-top";
+            }
+
+            // Validate source handle constraint
+            const existingFromSource = edges.find((e) => e.source === from.nodeId);
+            if (existingFromSource && existingFromSource.sourceHandle !== from.handleId) return;
+
+            // Validate target handle constraint
+            if (existingToTarget && existingToTarget.targetHandle !== targetHandle) return;
+
+            workflowStore.setEdges(addEdge({
+                source: from.nodeId,
+                sourceHandle: from.handleId,
+                target: targetNodeId,
+                targetHandle,
+            }, edges));
+        },
+        []
+    );
+
     const onSelectionChange = useCallback(
         ({ nodes: selected }: { nodes: Node[] }) => {
             if (!selectionMode) return;
@@ -348,10 +427,13 @@ const FlowCanvas = function FlowCanvas({ selectionMode = false, areaValid = fals
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
+                onConnectStart={onConnectStart}
+                onConnectEnd={onConnectEnd}
                 onReconnectStart={onReconnectStart}
                 onReconnect={onReconnect}
                 onReconnectEnd={onReconnectEnd}
                 isValidConnection={isValidConnection}
+                connectionRadius={20}
                 onDragOver={onDragOver}
                 onDrop={onDrop}
                 onNodeDoubleClick={onNodeDoubleClick}
