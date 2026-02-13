@@ -138,6 +138,10 @@ Installed devices appear as cards on the Devices page and as draggable items in 
 
 Colors are defined in `src/css/colors.scss` (`$device-on`, `$device-off`, `$device-simulate`) and applied via CSS classes `mode-activate`, `mode-deactivate`, `mode-simulate`.
 
+#### Bus identifier on device cards
+
+When a device uses a connection type that defines a `slave_id` or `bus_id` in its `device_settings` (see `pieces/utils/connections.json`), the device card displays this identifier after the bus name. For example, a MODBUS-RTU device with `slave_id: 3` shows `MODBUS-RTU #3`. This helps distinguish multiple devices on the same bus.
+
 #### Related files
 
 - `DevicesGrid.tsx` — Device card grid with mode segmented control and edit/delete actions.

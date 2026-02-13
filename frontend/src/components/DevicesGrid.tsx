@@ -21,7 +21,7 @@ function getModeClass(mode: string): string {
 const DevicesGrid = observer(function DevicesGrid({ onEdit }: DevicesGridProps) {
     const { isOver, setNodeRef } = useDroppable({ id: "devices-drop-zone" });
 
-    const devices = devicesStore.devices;
+    const devices = [...devicesStore.devices].sort((a, b) => a.label.localeCompare(b.label));
 
     if (devices.length === 0) {
         return (
@@ -80,6 +80,8 @@ const DevicesGrid = observer(function DevicesGrid({ onEdit }: DevicesGridProps) 
                                 {(busName || connectionType) && (
                                     <p className="device-card-bus">
                                         <IconLink size={10} /> {busName || connectionType}
+                                        {device.data?.slave_id != null && ` #${device.data.slave_id}`}
+                                        {device.data?.bus_id != null && ` #${device.data.bus_id}`}
                                     </p>
                                 )}
                             </div>
