@@ -4,7 +4,12 @@ interface WorkflowData {
     id: string;
     name: string;
     experiment_id: number;
-    parentId?: string | null;
+}
+
+interface SubflowData {
+    id: number;
+    workflow_id: string;
+    parent_id: string;
 }
 
 interface ExperimentData {
@@ -12,6 +17,7 @@ interface ExperimentData {
     name: string;
     description: string | null;
     workflows: WorkflowData[];
+    subflows: SubflowData[];
     created_at: string;
     updated_at: string;
 }
@@ -168,5 +174,5 @@ class ExperimentsStore {
 }
 
 const experimentsStore = new ExperimentsStore();
-export type { ExperimentData, WorkflowData };
+export type { ExperimentData, WorkflowData, SubflowData };
 export { experimentsStore };

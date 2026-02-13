@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Tabs, ActionIcon, Tooltip, Breadcrumbs, Anchor, TextInput } from "@mantine/core";
 import { IconPuzzle, IconCpu, IconSitemap, IconDeviceFloppy, IconCheck, IconCircleFilled, IconPointer, IconCheckbox } from "@tabler/icons-react";
 import { toJS } from "mobx";
@@ -16,6 +16,7 @@ import "./WorkflowsPage.scss";
 const WorkflowsPage = observer(() => {
     const navigate = useNavigate();
     const { workflowId } = useParams<{ workflowId: string }>();
+    const [searchParams] = useSearchParams();
     const [activeTab, setActiveTab] = useState<string | null>("blocks");
     const [selectionMode, setSelectionMode] = useState(false);
     const [areaName, setAreaName] = useState("");
@@ -40,14 +41,31 @@ const WorkflowsPage = observer(() => {
           )
         : null;
 
-    // Build workflow hierarchy chain (root → ... → parent → current)
+    // Build workflow hierarchy chain using navigation-based "from" param + subflows graph
     const workflowChain: { id: string; name: string }[] = [];
     if (parentExperiment && workflowStore.currentWorkflowId) {
         const wfMap = new Map(parentExperiment.workflows.map((wf) => [wf.id, wf]));
-        let current = wfMap.get(workflowStore.currentWorkflowId);
-        while (current) {
-            workflowChain.unshift({ id: current.id, name: current.name });
-            current = current.parentId ? wfMap.get(current.parentId) : undefined;
+        const subflows = parentExperiment.subflows || [];
+        // Start with current workflow
+        workflowChain.push({
+            id: workflowStore.currentWorkflowId,
+            name: wfMap.get(workflowStore.currentWorkflowId)?.name || workflowStore.currentWorkflowId,
+        });
+        // Walk up: first hop uses "from" param, subsequent hops pick any parent
+        let parentId = searchParams.get("from") || undefined;
+        if (!parentId) {
+            // No from param — pick any parent from subflows
+            const sf = subflows.find((s) => s.workflow_id === workflowStore.currentWorkflowId);
+            parentId = sf?.parent_id;
+        }
+        const visited = new Set<string>([workflowStore.currentWorkflowId]);
+        while (parentId && !visited.has(parentId)) {
+            visited.add(parentId);
+            const wf = wfMap.get(parentId);
+            if (!wf) break;
+            workflowChain.unshift({ id: wf.id, name: wf.name });
+            const sf = subflows.find((s) => s.workflow_id === parentId);
+            parentId = sf?.parent_id;
         }
     }
 
@@ -109,7 +127,7 @@ const WorkflowsPage = observer(() => {
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: trimmedName, parentId: workflowStore.currentWorkflowId }),
+                body: JSON.stringify({ name: trimmedName }),
             }
         );
         if (!createRes.ok) {

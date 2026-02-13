@@ -26,7 +26,7 @@ const WorkflowNode = memo(function WorkflowNode({ id, data }: NodeProps) {
                     title="Edit sub-workflow"
                     onClick={(e) => {
                         e.stopPropagation();
-                        navigate(`/workflows/${data.workflowRef}`);
+                        navigate(`/workflows/${data.workflowRef}?from=${workflowStore.currentWorkflowId}`);
                     }}
                 >
                     <IconPencil size={10} />

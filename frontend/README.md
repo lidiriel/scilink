@@ -106,11 +106,15 @@ Workflow nodes display a pencil icon on hover (top-right corner). Clicking it na
 
 ### Workflow Hierarchy & Breadcrumb Navigation
 
-Workflows support a parent-child hierarchy. When a sub-workflow is created, it is linked to its parent workflow via a `parentId` field stored in the database.
+Workflows support a many-to-many parent-child hierarchy via the `subflows` table. A workflow can appear as a sub-workflow in multiple parent workflows (e.g., `sub3` used in both `Main` and `sub1`).
+
+#### Cycle prevention
+
+When editing a workflow, the sidebar hides ancestor workflows to prevent cycles. Ancestors are computed via BFS on the `subflows` graph. The backend also rejects save requests that would create a cycle.
 
 #### Breadcrumb
 
-The toolbar displays a breadcrumb trail reflecting the full workflow hierarchy:
+The toolbar displays a navigation-based breadcrumb trail:
 
 ```text
 Experiments > Experiment Name > Root Workflow > ... > Parent Workflow > Current Workflow
@@ -120,13 +124,13 @@ Experiments > Experiment Name > Root Workflow > ... > Parent Workflow > Current 
 - Each **ancestor workflow** is a clickable link that navigates to that workflow's canvas.
 - The **current workflow** name is displayed as plain text (non-clickable).
 
-The chain is built by walking the `parentId` references from the current workflow up to the root within the parent experiment's workflow list.
+Since a workflow can have multiple parents, the breadcrumb uses a **navigation-based** approach: when clicking into a sub-workflow, a `?from=<parentWorkflowId>` query parameter is added to the URL. The breadcrumb walks up from the `from` param through the `subflows` graph. If no `from` param is present, it picks any parent.
 
 #### Data model
 
-- `Workflow.parent_id` — Foreign key to the parent workflow (nullable for root workflows).
-- `POST /api/experiments/{id}/workflows` accepts an optional `parentId` field to set the parent on creation.
-- `Experiment.to_dict()` includes `parentId` in each workflow entry so the frontend can build the hierarchy without extra API calls.
+- `subflows` table — Join table with `workflow_id` (the child) and `parent_id` (the workflow containing it). A workflow can have multiple entries (multiple parents).
+- `nodes.subflow_id` — Foreign key to `subflows.id` (not directly to a workflow). The backend creates/manages `Subflow` records automatically when saving a workflow that contains workflow nodes.
+- `Experiment.to_dict()` includes a `subflows` array so the frontend can build the full hierarchy graph without extra API calls.
 
 ### Devices
 
