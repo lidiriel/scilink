@@ -123,3 +123,25 @@ The chain is built by walking the `parentId` references from the current workflo
 - `Workflow.parent_id` — Foreign key to the parent workflow (nullable for root workflows).
 - `POST /api/experiments/{id}/workflows` accepts an optional `parentId` field to set the parent on creation.
 - `Experiment.to_dict()` includes `parentId` in each workflow entry so the frontend can build the hierarchy without extra API calls.
+
+### Devices
+
+Installed devices appear as cards on the Devices page and as draggable items in the workflow sidebar. Each device has a **mode** that controls its operational state, indicated by a colored left-border.
+
+#### Mode colors
+
+| Mode         | Label | Color  | Border    | Description                  |
+|--------------|-------|--------|-----------|------------------------------|
+| `activate`   | On    | Green  | `#22c55e` | Device is active and running |
+| `deactivate` | Off   | Gray   | `#9ca3af` | Device is inactive           |
+| `simulate`   | Sim   | Orange | `#f59e0b` | Device runs in simulation    |
+
+Colors are defined in `src/css/colors.scss` (`$device-on`, `$device-off`, `$device-simulate`) and applied via CSS classes `mode-activate`, `mode-deactivate`, `mode-simulate`.
+
+#### Related files
+
+- `DevicesGrid.tsx` — Device card grid with mode segmented control and edit/delete actions.
+- `SidebarDevicesList.tsx` — Sidebar device list with drag-and-drop support and mode icon indicators.
+- `DevicesPage.scss` — Card border-left color styles per mode.
+- `WorkflowsPage.scss` — Sidebar device item border and mode icon color styles.
+- `css/colors.scss` — Color variable definitions for all device modes.

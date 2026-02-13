@@ -155,6 +155,19 @@ const FlowCanvas = function FlowCanvas({ selectionMode = false, areaValid = fals
         return dispose;
     }, []);
 
+    // Fit view when switching workflows
+    const prevWorkflowId = useRef<string | null>(null);
+    useEffect(() => {
+        const dispose = autorun(() => {
+            const id = workflowStore.currentWorkflowId;
+            if (id && id !== prevWorkflowId.current) {
+                prevWorkflowId.current = id;
+                setTimeout(() => reactFlowInstance.fitView({ padding: 0.2 }), 50);
+            }
+        });
+        return dispose;
+    }, [reactFlowInstance]);
+
     const onNodeDoubleClick = useCallback((_event: React.MouseEvent, node: Node) => {
         setSelectedNodeId(node.id);
         openModal();
