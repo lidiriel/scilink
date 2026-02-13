@@ -4,9 +4,8 @@ SciLink is a web platform for managing scientific instruments and building exper
 
 ## Architecture
 
-- **Interface**: Flask (Python) with SQLAlchemy ORM
+- **Frontend + Backend**: A single `frontend/` directory serving both the React UI and the Flask (Python) API
 - **Database**: PostgreSQL with JSONB for flexible data storage
-- **Frontend**: Vanilla JavaScript (ES6 modules), Jinja2 templates, CSS
 - **Messaging**: NATS with JetStream for async communication
 - **Platform**: Rust supervisor service for workflow execution
 
@@ -16,93 +15,87 @@ SciLink is a web platform for managing scientific instruments and building exper
 scilink-src/
 ├── docker-compose.yml
 ├── .env / .env.example
-├── database/
-│   ├── schema.sql                # Tables, indexes, triggers
-│   ├── seed.sql                  # Test/mock data
-│   ├── init_db.py                # Standalone DB init script
-│   └── data/                     # PostgreSQL data volume (git-ignored)
-├── interface/
-│   ├── workflow_db.py            # Flask app entry point
-│   ├── models.py                 # SQLAlchemy models
-│   ├── requirements.txt
+├── frontend/
+│   ├── server.py                # Flask app entry point
+│   ├── config.py                # Flask configuration (dev/prod)
+│   ├── models.py                # SQLAlchemy models
+│   ├── requirements.txt         # Python dependencies
 │   ├── Dockerfile
-│   ├── routes/                   # Flask blueprints (API)
-│   │   ├── core.py               # Health, static pages
-│   │   ├── workflows.py          # Workflow CRUD + node updates
-│   │   ├── pieces.py             # Block/device piece listing
-│   │   ├── devices.py            # Device management
-│   │   ├── settings.py           # Platforms, buses
-│   │   ├── experiments.py        # Experiments
-│   │   └── helpers.py            # Shared utilities
-│   ├── static/
-│   │   ├── css/
-│   │   │   ├── base.css          # Global styles, variables
-│   │   │   ├── sidebar.css       # Navigation sidebar
-│   │   │   ├── panels.css        # Side panels (workflows, pieces)
-│   │   │   ├── canvas.css        # Workflow canvas, nodes, edges
-│   │   │   ├── modal.css         # Modal base styles
-│   │   │   └── pages.css         # Page-specific styles (devices, settings)
-│   │   └── js/
-│   │       ├── app.js            # Main entry, workflow save, init
-│   │       ├── state.js          # Shared application state
-│   │       ├── navigation.js     # Page routing
-│   │       ├── canvas.js         # SVG canvas, pan/zoom
-│   │       ├── nodes.js          # Node rendering, drag-drop
-│   │       ├── edges.js          # Edge rendering, connections
-│   │       ├── node-inputs.js    # Node user inputs modal
-│   │       ├── pieces.js         # Piece browser panel
-│   │       ├── devices.js        # Device cards, install modal
-│   │       ├── connections.js    # Connection type management
-│   │       ├── buses.js          # Bus configuration
-│   │       ├── settings.js       # Settings/platform page
-│   │       ├── experiments.js    # Experiments page
-│   │       ├── workflows-panel.js # Workflow list panel
-│   │       ├── generic-panel.js  # Reusable collapsible panel
-│   │       ├── tabbed-panel.js   # Tabbed panel component
-│   │       ├── zoom.js           # Zoom controls
-│   │       └── utils.js          # escapeHtml, helpers
-│   └── templates/
-│       ├── base.html             # Main layout (head, scripts, sidebar)
-│       ├── components/
-│       │   └── sidebar.html      # Navigation sidebar
-│       ├── pages/
-│       │   ├── workflows.html    # Workflow designer
-│       │   ├── devices.html      # Device management
-│       │   ├── settings.html     # Platforms & buses
-│       │   ├── experiments.html  # Experiments
-│       │   └── monitor.html      # Monitoring
-│       └── modals/
-│           ├── device.html       # Device install/edit
-│           ├── platform.html     # Platform config
-│           ├── bus.html          # Bus config
-│           ├── experiment.html   # Experiment form
-│           └── node-inputs.html  # Node settings
+│   ├── routes/                  # Flask blueprints (API)
+│   │   ├── core.py              # Health, static pages
+│   │   ├── workflows.py         # Workflow CRUD + node updates
+│   │   ├── pieces.py            # Block/device piece listing
+│   │   ├── devices.py           # Device management
+│   │   ├── settings.py          # Platforms, buses
+│   │   ├── experiments.py       # Experiments + workflow creation
+│   │   └── helpers.py           # Shared utilities
+│   ├── package.json             # Node dependencies
+│   ├── vite.config.js           # Vite bundler config
+│   ├── tsconfig.json            # TypeScript config
+│   ├── eslint.config.js         # ESLint with TypeScript rules
+│   ├── index.html               # SPA entry point
+│   └── src/                     # React application
+│       ├── main.tsx             # React entry point
+│       ├── App.tsx              # Router & layout
+│       ├── behaviour/           # MobX stores
+│       │   ├── workflows.tsx    # Workflow state & API
+│       │   └── experiments.tsx  # Experiments state & API
+│       ├── components/          # Reusable components
+│       │   ├── FlowCanvas.tsx   # React Flow canvas
+│       │   ├── AreaOverlay.tsx  # Sub-workflow selection overlay
+│       │   ├── WorkflowNode.tsx # Custom workflow node
+│       │   └── Sidebar*.tsx     # Sidebar panels (blocks, devices, workflows)
+│       ├── pages/               # Route pages
+│       │   ├── WorkflowsPage.tsx
+│       │   ├── ExperimentsPage.tsx
+│       │   ├── DevicesPage.tsx
+│       │   └── SettingsPage.tsx
+│       ├── modals/              # Modal dialogs
+│       ├── utils/               # Helpers (device icons, etc.)
+│       ├── css/                 # Global styles
+│       └── i18n.tsx             # Internationalization setup
+├── database/
+│   ├── schema.sql               # Tables, indexes, triggers
+│   ├── seed.sql                 # Test/mock data
+│   ├── init_db.py               # Standalone DB init script
+│   └── data/                    # PostgreSQL data volume (git-ignored)
 ├── nats/
-│   └── nats.conf                 # NATS server config (JetStream enabled)
+│   └── nats.conf                # NATS server config (JetStream enabled)
 ├── platform/
-│   ├── Dockerfile                # Rust multi-stage build
-│   ├── Cargo.toml                # Rust dependencies (async-nats, tokio)
+│   ├── Dockerfile               # Rust multi-stage build
+│   ├── Cargo.toml               # Rust dependencies (async-nats, tokio)
 │   └── src/
-│       └── main.rs               # Supervisor entry point
+│       └── main.rs              # Supervisor entry point
 └── pieces/
     ├── default/
-    │   ├── blocks/               # Workflow blocks
-    │   │   ├── CronClock/        # Scheduled triggers
-    │   │   ├── CustomPython/     # Custom scripts
-    │   │   ├── Sleep/            # Delay block
-    │   │   ├── Timer/            # Timer block
-    │   │   └── ToString/         # Data conversion
-    │   └── devices/              # Device drivers
-    │       ├── Relay/            # Relay controller
-    │       ├── PinchValve/       # Pinch valve (depends on Relay)
-    │       ├── 4In1ComValve/     # 4-in-1 combination valve
-    │       ├── Pump/             # Pump controller
-    │       ├── TempSensor/       # Temperature sensor
+    │   ├── blocks/              # Workflow blocks
+    │   │   ├── CronClock/       # Scheduled triggers
+    │   │   ├── CustomPython/    # Custom scripts
+    │   │   ├── Sleep/           # Delay block
+    │   │   ├── Timer/           # Timer block
+    │   │   └── ToString/        # Data conversion
+    │   └── devices/             # Device drivers
+    │       ├── Relay/           # Relay controller
+    │       ├── PinchValve/      # Pinch valve (depends on Relay)
+    │       ├── 4In1ComValve/    # 4-in-1 combination valve
+    │       ├── Pump/            # Pump controller
+    │       ├── TempSensor/      # Temperature sensor
     │       ├── SpectrometerOcean/ # Ocean spectrometer
-    │       └── Filterwheel/      # Filter wheel
+    │       └── Filterwheel/     # Filter wheel
     └── utils/
-        └── connections.json      # Connection type definitions
+        └── connections.json     # Connection type definitions
 ```
+
+## Frontend Stack
+
+- **React 19** + TypeScript + Vite
+- **Mantine 8** for UI components (Tabs, Card, Modal, SegmentedControl, AppShell, etc.)
+- **MobX** for state management (stores in `src/behaviour/`)
+- **React Flow** for the workflow canvas
+- **@dnd-kit/core** for drag-and-drop (device piece installation)
+- **@tabler/icons-react** for all icons
+- **react-i18next** for internationalization
+- **SCSS** for component styles
 
 ## Database
 
@@ -111,7 +104,7 @@ scilink-src/
 | Table               | Description                                 |
 |---------------------|---------------------------------------------|
 | `experiments`       | Experiment metadata                         |
-| `workflows`         | Workflow definitions (supports hierarchy)   |
+| `workflows`         | Workflow definitions (supports hierarchy via `parent_id`)   |
 | `nodes`             | Workflow nodes (blocks, devices, composites)|
 | `edges`             | Connections between nodes                   |
 | `blocks_used`       | Tracks block/piece usage per workflow       |
@@ -122,7 +115,7 @@ scilink-src/
 
 - **Composite primary keys**: Nodes use `(id, workflow_id)` as primary key
 - **JSONB columns**: `nodes.data`, `devices_installed.data`, and `settings.data` store flexible structured data (user inputs, dependency matches, bus config)
-- **Self-referential FK**: `devices_installed.depends_on_id` references another device
+- **Self-referential FK**: `devices_installed.depends_on_id` references another device; `workflows.parent_id` references a parent workflow
 - **Cascade deletes**: Deleting a workflow removes its nodes, edges, and blocks_used
 
 ## Pieces
@@ -190,31 +183,18 @@ Double-clicking a workflow node opens a settings modal. Fields are rendered base
 | `DELETE` | `/api/settings/<id>` | Delete setting |
 
 ### Experiments
-| Method   | Endpoint                | Description       |
-|----------|-------------------------|-------------------|
-| `GET`    | `/api/experiments`      | List experiments  |
-| `POST`   | `/api/experiments`      | Create experiment |
-| `PUT`    | `/api/experiments/<id>` | Update experiment |
-| `DELETE` | `/api/experiments/<id>` | Delete experiment |
+| Method   | Endpoint                                  | Description                |
+|----------|-------------------------------------------|----------------------------|
+| `GET`    | `/api/experiments`                        | List experiments           |
+| `POST`   | `/api/experiments`                        | Create experiment          |
+| `PUT`    | `/api/experiments/<id>`                   | Update experiment          |
+| `DELETE` | `/api/experiments/<id>`                   | Delete experiment          |
+| `POST`   | `/api/experiments/<id>/workflows`         | Add workflow (accepts `parentId`) |
 
 ### Other
 | Method | Endpoint      | Description  |
 |--------|---------------|--------------|
 | `GET`  | `/api/health` | Health check |
-
-## Development
-
-### Frontend
-
-The React frontend lives in `frontend/` and uses:
-
-- **React 19** + TypeScript + Vite
-- **Mantine 8** for UI components (Tabs, Card, Modal, SegmentedControl, AppShell, etc.)
-- **MobX** for state management (stores in `frontend/src/behaviour/`)
-- **React Flow** for the workflow canvas
-- **@dnd-kit/core** for drag-and-drop (device piece installation)
-- **@tabler/icons-react** for all icons
-- **react-i18next** for internationalization
 
 ### Device Tag-to-Icon Mapping
 

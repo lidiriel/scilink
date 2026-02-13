@@ -84,6 +84,15 @@ def update_workflow(workflow_id):
             )
             db.session.add(edge)
 
+    # Auto-set parent_id on referenced sub-workflows
+    if 'nodes' in data:
+        for node_data in data['nodes']:
+            subflow_id = node_data.get('subflowId')
+            if subflow_id:
+                sub = Workflow.query.get(subflow_id)
+                if sub and sub.parent_id != workflow_id:
+                    sub.parent_id = workflow_id
+
     db.session.commit()
     return jsonify({'success': True, 'workflow': workflow.to_dict()})
 

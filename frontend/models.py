@@ -25,7 +25,7 @@ class Experiment(db.Model):
             'id': self.id,
             'name': self.name,
             'description': self.description,
-            'workflows': [{'id': w.id, 'name': w.name} for w in self.workflows],
+            'workflows': [{'id': w.id, 'name': w.name, 'parentId': w.parent_id} for w in self.workflows],
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
