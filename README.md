@@ -199,25 +199,50 @@ Double-clicking a workflow node opens a settings modal. Fields are rendered base
 |--------|---------------|--------------|
 | `GET`  | `/api/health` | Health check |
 
-### Device Tag-to-Icon Mapping
+### Device Icons
 
-Device icons in the UI are determined by the `tags` array from each piece's `metadata.json`. The mapping is defined in `frontend/src/utils/deviceIcons.ts` and used across device cards, the pieces panel, and the workflow sidebar.
+Device icons are rendered using [Font Awesome 6](https://fontawesome.com/icons) (free solid subset). Each device piece declares its icon in `metadata.json` via the `style.icon_class_name` field using the format `fa-solid:fa-<name>`:
 
-| Tag             | Icon              | Example devices                    |
-|-----------------|-------------------|------------------------------------|
-| `sensors`       | IconTemperature   | TempSensor, SpectrometerOcean      |
-| `actuator`      | IconEngine        | Pump, Filterwheel                  |
-| `relays`        | IconBolt          | Relay                              |
-| `fluidics`      | IconDroplet       | PinchValve, 4In1ComValve           |
-| `camera`        | IconCamera        |                                    |
-| `light`         | IconBulb          |                                    |
-| `communication` | IconAntenna       |                                    |
-| `gauge`         | IconGauge         |                                    |
-| *(fallback)*    | IconCpu           | Any device without a matched tag   |
+```json
+"style": {
+    "node_label": "Pinch Valve",
+    "icon_class_name": "fa-solid:fa-droplet"
+}
+```
 
-When a device has multiple tags (e.g. PinchValve has `["hardware", "actuator", "fluidics"]`), the most specific tag wins. The priority order is: `fluidics > camera > light > communication > gauge > sensors > actuator > relays`. The generic `hardware` tag is always ignored.
+The `DeviceIcon` component in `frontend/src/utils/deviceIcons.ts` parses this field, looks up the icon in the FA library, and renders it via `@fortawesome/react-fontawesome`. If `icon_class_name` is missing or invalid, a fallback icon (`fa-microchip`) is used.
 
-To add a new icon mapping, update `TAG_ICON_MAP` and `TAG_PRIORITY` in `frontend/src/utils/deviceIcons.ts`.
+#### Current device icons
+
+| Device            | `icon_class_name`              | Icon          |
+|-------------------|--------------------------------|---------------|
+| Relay             | `fa-solid:fa-bolt`             | bolt          |
+| Pump              | `fa-solid:fa-plug`             | plug          |
+| Filterwheel       | `fa-solid:fa-plug`             | plug          |
+| TempSensor        | `fa-solid:fa-temperature-half` | thermometer   |
+| SpectrometerOcean | `fa-solid:fa-wave-square`      | wave          |
+| PinchValve        | `fa-solid:fa-droplet`          | droplet       |
+| 4In1ComValve      | `fa-solid:fa-droplet`          | droplet       |
+
+#### Adding a new icon
+
+1. Choose a free solid icon from [Font Awesome](https://fontawesome.com/search?o=r&s=solid&ip=free).
+2. Set `style.icon_class_name` in the device's `metadata.json` (e.g. `fa-solid:fa-flask`).
+3. Import and register the corresponding icon in `frontend/src/utils/deviceIcons.ts`:
+
+   ```ts
+   import { faFlask } from "@fortawesome/free-solid-svg-icons";
+   library.add(..., faFlask);
+   ```
+
+#### Where icons are rendered
+
+| Location                     | Component                | Icon source                                      |
+|------------------------------|--------------------------|--------------------------------------------------|
+| Workflow canvas nodes        | `DeviceNode.tsx`         | `data.iconClass` (from `blocks_used.icon_class`) |
+| Device cards (Devices page)  | `DevicesGrid.tsx`        | `device.icon_class` (from `devices_installed`)   |
+| Devices panel (Devices page) | `DevicePiecesPanel.tsx`  | `piece.icon_class_name` (from `metadata.json`)   |
+| Workflow sidebar devices     | `SidebarDevicesList.tsx` | `device.icon_class` (from `devices_installed`)   |
 
 ## Setup
 

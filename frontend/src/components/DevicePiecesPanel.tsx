@@ -4,7 +4,7 @@ import { IconSearch, IconPuzzle } from "@tabler/icons-react";
 import { useDraggable } from "@dnd-kit/core";
 import { observer } from "mobx-react-lite";
 import { devicesStore, type DevicePiece } from "../behaviour/devices";
-import { getDeviceIcon } from "../utils/deviceIcons";
+import { DeviceIcon } from "../utils/deviceIcons";
 
 function DraggablePieceItem({ piece }: { piece: DevicePiece }) {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -19,7 +19,7 @@ function DraggablePieceItem({ piece }: { piece: DevicePiece }) {
             {...listeners}
             {...attributes}
         >
-            {(() => { const Icon = getDeviceIcon(piece.tags); return <Icon size={14} className="piece-icon" />; })()}
+            <DeviceIcon iconClassName={piece.icon_class_name} size={14} />
             <span>{piece.node_label || piece.name}</span>
         </div>
     );

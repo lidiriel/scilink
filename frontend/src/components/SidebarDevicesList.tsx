@@ -8,7 +8,7 @@ import {
 } from "@tabler/icons-react";
 import { observer } from "mobx-react-lite";
 import { devicesStore } from "../behaviour/devices";
-import { getDeviceIcon } from "../utils/deviceIcons";
+import { DeviceIcon } from "../utils/deviceIcons";
 
 function getModeClass(mode: string): string {
     return mode === "activate" ? "mode-activate" : mode === "simulate" ? "mode-simulate" : "mode-deactivate";
@@ -68,7 +68,7 @@ const SidebarDevicesList = observer(function SidebarDevicesList() {
                         }}
                     >
                         <div className="sidebar-device-icon">
-                            {(() => { const Icon = getDeviceIcon(device.data?.tags); return <Icon size={14} />; })()}
+                            <DeviceIcon iconClassName={device.icon_class} size={14} />
                         </div>
                         <div className="sidebar-device-info">
                             <span className="sidebar-device-label">{device.label}</span>
