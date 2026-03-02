@@ -2,6 +2,11 @@
 
 SciLink is a web platform for managing scientific instruments and building experiment workflows. It connects devices (sensors, actuators, controllers) into visual workflows that can be configured and executed.
 
+> [!IMPORTANT]
+> **prototype under development**
+> current task (2026 march) is NATS dev.
+
+
 ## Architecture
 
 - **Frontend + Backend**: A single `frontend/` directory serving both the React UI and the Flask (Python) API
